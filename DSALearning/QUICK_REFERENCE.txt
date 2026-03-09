@@ -1,0 +1,449 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                     DSA QUICK REFERENCE GUIDE                                   ║
+║              Your Complete Interview Preparation Cheat Sheet                     ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+📌 ARRAYS & STRINGS
+═════════════════════════════════════════════════════════════════════════════════
+
+Two-Pointer Technique:
+  - Use for: Sorted arrays, palindromes, two sum
+  - How: Start from both ends, move towards center
+  - Time: O(n), Space: O(1)
+
+Sliding Window:
+  - Use for: Subarray/substring problems
+  - How: Maintain a window, expand/contract based on condition
+  - Time: O(n), Space: O(k) where k = window size
+
+Common Problems:
+  ✓ Two Sum: HashMap O(n) or Two-pointer O(n)
+  ✓ Longest Substring: Sliding window O(n)
+  ✓ Array Reversal: Two-pointer O(n)
+  ✓ Palindrome Check: Two-pointer O(n)
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 SEARCHING & SORTING
+═════════════════════════════════════════════════════════════════════════════════
+
+Searching:
+  Binary Search: O(log n) on sorted array
+  Linear Search: O(n) on any array
+
+Sorting Comparison:
+┌─────────────┬────────────┬────────────┬─────────────┬──────────┐
+│ Algorithm   │ Best Case  │ Avg Case   │ Worst Case  │ Space    │
+├─────────────┼────────────┼────────────┼─────────────┼──────────┤
+│ Bubble      │ O(n)       │ O(n²)      │ O(n²)       │ O(1)     │
+│ Selection   │ O(n²)      │ O(n²)      │ O(n²)       │ O(1)     │
+│ Insertion   │ O(n)       │ O(n²)      │ O(n²)       │ O(1)     │
+│ Merge       │ O(n log n) │ O(n log n) │ O(n log n)  │ O(n)     │
+│ Quick       │ O(n log n) │ O(n log n) │ O(n²)       │ O(log n) │
+│ Heap        │ O(n log n) │ O(n log n) │ O(n log n)  │ O(1)     │
+└─────────────┴────────────┴────────────┴─────────────┴──────────┘
+
+When to Use:
+  - Merge Sort: Large data, stability needed
+  - Quick Sort: General purpose, fast average
+  - Insertion Sort: Small or nearly sorted data
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 LINKED LISTS
+═════════════════════════════════════════════════════════════════════════════════
+
+Operations:
+  Access: O(n)
+  Insert (at position): O(n) to find, O(1) to insert
+  Delete: O(n) to find, O(1) to delete
+
+Critical Problems:
+  ✓ Reverse: O(n) with three pointers (prev, curr, next)
+  ✓ Detect Cycle: Floyd's Tortoise-Hare O(n) O(1)
+  ✓ Merge Sorted: O(m+n) with dummy node
+  ✓ Find Kth: O(n) iterate k times
+  ✓ Remove Nth: O(n) traverse
+
+Key Insight:
+  Always use dummy node for easier implementation!
+  Three pointers for reversal (prev, curr, next)
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 STACKS & QUEUES
+═════════════════════════════════════════════════════════════════════════════════
+
+Stack (LIFO):
+  push, pop, peek: All O(1)
+  Use for: Parentheses, undo/redo, function calls, postfix eval
+
+Queue (FIFO):
+  enqueue, dequeue, peek: All O(1)
+  Use for: BFS, scheduling, buffering
+
+Priority Queue:
+  insert, deleteMin: O(log n)
+  Use for: Dijkstra, K-largest problems
+
+Common Problems:
+  ✓ Balanced Parentheses: Stack O(n)
+  ✓ Postfix Evaluation: Stack O(n)
+  ✓ LRU Cache: Queue + HashMap
+  ✓ Queue from Stacks: 2 stacks amortized O(1)
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 TREES
+═════════════════════════════════════════════════════════════════════════════════
+
+Tree Traversals:
+  Inorder (L-N-R):  For BST gives sorted order
+  Preorder (N-L-R): For tree copying
+  Postorder (L-R-N): For tree deletion
+  Level Order (BFS): Using queue
+
+  All: Time O(n), Space O(h) except level order O(max width)
+
+BST Properties:
+  Left < Parent < Right
+  Search: O(log n) balanced, O(n) skewed
+  Insert: Same as search
+
+Key Problems:
+  ✓ Height: O(n) recursive
+  ✓ Is Balanced: O(n) check height difference ≤ 1
+  ✓ LCA: O(h) for BST using comparison
+  ✓ Level Order: O(n) with queue BFS
+  ✓ Path Sum: O(n) DFS
+  ✓ Serialize/Deserialize: O(n)
+
+Important:
+  - Inorder of BST is sorted!
+  - Balanced = height difference ≤ 1
+  - LCA works differently for BST vs general tree
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 GRAPHS
+═════════════════════════════════════════════════════════════════════════════════
+
+Representations:
+  Adjacency List: Better for sparse (V+E space)
+  Adjacency Matrix: Better for dense (V² space)
+
+Traversals:
+  DFS: Stack-based, explores deeply first
+    Uses: Cycle detection, topological sort
+    Time: O(V+E), Space: O(V)
+
+  BFS: Queue-based, explores level by level
+    Uses: Shortest path in unweighted
+    Time: O(V+E), Space: O(V)
+
+Shortest Path:
+  Unweighted: BFS O(V+E)
+  Weighted, non-negative: Dijkstra O((V+E) log V)
+  Negative edges: Bellman-Ford O(VE)
+  All pairs: Floyd-Warshall O(V³)
+
+Topological Sort:
+  For DAGs only!
+  DFS with stack: O(V+E)
+  Used for: Task scheduling, build systems
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 RECURSION & DYNAMIC PROGRAMMING
+═════════════════════════════════════════════════════════════════════════════════
+
+Recursion:
+  Must have base case!
+  Often exponential time
+  Think: Can I break this into smaller subproblems?
+
+DP Requirements (all three must be true):
+  1. Overlapping subproblems (solve same subproblem multiple times)
+  2. Optimal substructure (optimal solution from optimal subproblems)
+  3. Can memoize results
+
+Two DP Approaches:
+  Memoization (Top-Down):
+    - Recursive with caching
+    - Code similar to brute force
+    - Add memo dictionary
+
+  Tabulation (Bottom-Up):
+    - Iterative with DP table
+    - Build from base cases up
+    - More efficient, controllable
+
+Classic DP Problems:
+  Fibonacci:
+    - Pure recursion: O(2^n)
+    - Memoization: O(n)
+    - Tabulation: O(n)
+    - Space optimization: O(1) with two variables
+
+  Coin Change: O(amount × coins)
+    dp[i] = minimum coins for amount i
+
+  LCS: O(m × n)
+    dp[i][j] = LCS of first i and j chars
+
+  Knapsack: O(n × capacity)
+    dp[i][w] = max value with capacity w
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 HASHING & ADVANCED
+═════════════════════════════════════════════════════════════════════════════════
+
+Hash Table:
+  Insert/Delete/Search: O(1) average, O(n) worst
+  Good for: Counting, finding duplicates, grouping
+
+Collision Handling:
+  Chaining: Multiple values per key
+  Open Addressing: Find another position
+
+Common Problems:
+  ✓ Two Sum: HashMap O(n)
+  ✓ First Unique: Frequency map O(n)
+  ✓ Anagrams: Character count O(n)
+  ✓ Duplicates: HashSet O(n)
+  ✓ Group Anagrams: HashMap + sorting
+
+Bit Manipulation:
+  & (AND): Both 1 → 1
+  | (OR): Either 1 → 1
+  ^ (XOR): Different → 1
+  ~ (NOT): Flip all
+  << (Left shift): Multiply by 2
+  >> (Right shift): Divide by 2
+
+Tricks:
+  a & (a-1): Remove rightmost 1 bit
+  a ^ a = 0: XOR cancels equal numbers
+  n & 1: Check if odd
+  n >> 1: Divide by 2
+  1 << n: 2^n
+
+Problems:
+  ✓ Power of 2: n > 0 && (n & (n-1)) == 0
+  ✓ Count Ones: n & (n-1) repeatedly
+  ✓ Single Number: XOR all (duplicates cancel)
+  ✓ Swap without temp: a ^= b; b ^= a; a ^= b
+
+Greedy Algorithms:
+  Make locally optimal choice at each step
+  Works when: Local optimal = Global optimal
+
+Examples:
+  Activity Selection: Pick ending earliest
+  Coin Change: Use largest denominations (for standard coins)
+  Huffman Coding: Merge smallest frequencies
+
+When to use:
+  - Optimization problems
+  - At each step, pick best option
+  - Prove correctness of greedy choice
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 BIG O COMPLEXITY
+═════════════════════════════════════════════════════════════════════════════════
+
+Time Complexities (Fastest → Slowest):
+  O(1)    Constant     Direct access, hash
+  O(log n) Log         Binary search, balanced BST
+  O(n)    Linear       Loop, linear search
+  O(n log n) Linearithmic  Merge sort, quick sort
+  O(n²)   Quadratic    Nested loop, bubble sort
+  O(n³)   Cubic        Triple nested loop
+  O(2^n)  Exponential  Subsets, permutations
+  O(n!)   Factorial    All permutations
+
+For Competitive Programming:
+  n = 10^6 → Can do O(n) or O(n log n)
+  n = 10^4 → Can do O(n²)
+  n = 10^3 → Can do O(n³)
+  n = 20  → Can do O(2^n)
+
+Space Complexity:
+  Same notations as time complexity
+  But consider: Recursion depth, hash tables, arrays
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 INTERVIEW TIPS
+═════════════════════════════════════════════════════════════════════════════════
+
+BEFORE CODING:
+  1. Read problem carefully
+  2. Ask clarifying questions
+  3. Identify data structures needed
+  4. Think of multiple approaches
+  5. Discuss time/space tradeoffs
+  6. Get approval before coding
+
+WHILE CODING:
+  1. Write clean, readable code
+  2. Use meaningful variable names
+  3. Add comments for complex logic
+  4. Test with examples
+  5. Check edge cases
+  6. Optimize if time permits
+
+AFTER CODING:
+  1. Walk through the code
+  2. Explain your approach
+  3. Discuss time/space complexity
+  4. Mention edge cases handled
+  5. Suggest optimizations
+  6. Ask for feedback
+
+EDGE CASES TO CHECK:
+  ✓ Empty input (array, list, string)
+  ✓ Single element
+  ✓ Duplicates
+  ✓ Negative numbers
+  ✓ Large numbers (overflow)
+  ✓ Null pointers
+  ✓ All same elements
+  ✓ Alternating pattern
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 MOST IMPORTANT CONCEPTS
+═════════════════════════════════════════════════════════════════════════════════
+
+MUST-KNOW:
+  1. Two-pointer technique
+  2. Sliding window
+  3. Binary search
+  4. DFS & BFS
+  5. Recursion with base case
+  6. Dynamic programming
+  7. Hash table operations
+  8. BST properties
+  9. Tree traversals
+  10. Sorting algorithms
+
+FREQUENTLY ASKED (75% of interviews):
+  1. Arrays & Strings (20%)
+  2. Trees (15-20%)
+  3. Linked Lists (10-15%)
+  4. Graphs (10-15%)
+  5. Dynamic Programming (10%)
+  6. Hashing (8-10%)
+  7. Sorting (5-10%)
+  8. Stacks & Queues (5-10%)
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 STUDY CHECKLIST
+═════════════════════════════════════════════════════════════════════════════════
+
+WEEK 1-2 (Arrays & Strings):
+  ☐ Two-pointer technique
+  ☐ Sliding window
+  ☐ String manipulation
+  ☐ Solve 15-20 LeetCode problems
+
+WEEK 2-3 (Searching & Sorting):
+  ☐ Binary search
+  ☐ All 5 sorting algorithms
+  ☐ Understand when to use each
+  ☐ Solve 10-15 problems
+
+WEEK 3-4 (Linked Lists):
+  ☐ Basic operations
+  ☐ Reverse list
+  ☐ Floyd's cycle detection
+  ☐ Solve 15-20 problems
+
+WEEK 4-5 (Stacks & Queues):
+  ☐ Stack and queue implementation
+  ☐ Common applications
+  ☐ Solve 10-15 problems
+
+WEEK 5-6 (Trees) - CRITICAL:
+  ☐ All 4 traversals
+  ☐ BST operations
+  ☐ Balance checking
+  ☐ LCA problem
+  ☐ Solve 25-30 problems (important!)
+
+WEEK 6-7 (Graphs):
+  ☐ DFS and BFS
+  ☐ Dijkstra's algorithm
+  ☐ Topological sort
+  ☐ Solve 20-25 problems
+
+WEEK 7-8 (Recursion & DP):
+  ☐ Recursion patterns
+  ☐ Memoization
+  ☐ Tabulation
+  ☐ Classic DP problems
+  ☐ Solve 30+ problems
+
+WEEK 8+ (Hashing & Review):
+  ☐ Hash table problems
+  ☐ Bit manipulation
+  ☐ Greedy algorithms
+  ☐ Review weak areas
+  ☐ Solve 50+ more problems
+  ☐ Practice timed problems
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📌 SUCCESS FORMULA
+═════════════════════════════════════════════════════════════════════════════════
+
+CONSISTENCY:
+  Study 1-2 hours EVERY day
+  No 0 days!
+
+UNDERSTANDING:
+  Don't memorize, understand concepts
+  Explain to others
+  Look for patterns
+
+PRACTICE:
+  Solve many problems
+  Try different approaches
+  Optimize solutions
+
+REFLECTION:
+  Review mistakes
+  Learn from wrong solutions
+  Note patterns you missed
+
+CONFIDENCE:
+  Track progress
+  Celebrate wins
+  Believe in yourself
+  You've got this!
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🎯 Final Reminders:
+═════════════════════════════════════════════════════════════════════════════════
+
+✓ Code quality matters - write clean code
+✓ Complexity analysis is crucial - always explain
+✓ Edge cases matter - test them
+✓ Communication is key - think aloud
+✓ Practice beats talent - effort wins
+✓ Mistakes are learning - review them
+✓ Optimize gradually - solve first
+✓ Mock interviews help - practice with friends
+✓ Believe in yourself - you can do it!
+✓ Consistency beats intensity - show up daily
+
+═════════════════════════════════════════════════════════════════════════════════
+
+Good luck with your interview preparation! 🚀
+You have everything you need. Now go execute! 💯
+

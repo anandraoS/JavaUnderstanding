@@ -1,0 +1,605 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    DSA INTERVIEW PREPARATION WORKSPACE
+                         COMPLETE FILE INDEX
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+DSALearning/
+├── src/                          ← All Java implementation files
+│   ├── Main.java                 ← START HERE! Entry point
+│   ├── DSAComprehensiveGuide.java ← Read this next - Complete guide
+│   ├── ArraysAndStrings.java      ← Topic 1: Arrays & Strings
+│   ├── SearchingAndSorting.java   ← Topic 2: Searching & Sorting
+│   ├── LinkedLists.java           ← Topic 3: Linked Lists
+│   ├── StacksAndQueues.java       ← Topic 4: Stacks & Queues
+│   ├── Trees.java                 ← Topic 5: Trees (Most Important!)
+│   ├── Graphs.java                ← Topic 6: Graphs
+│   ├── RecursionAndDP.java        ← Topic 7: Recursion & Dynamic Programming
+│   └── HashingAndAdvanced.java    ← Topic 8: Hashing & Advanced
+│
+├── README.md                      ← Detailed learning guide
+├── QUICK_REFERENCE.txt            ← Cheat sheet & complexity chart
+├── WORKSPACE_SUMMARY.txt          ← This workspace overview
+└── DSALearning.iml                ← IntelliJ project file
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 STARTING YOUR LEARNING JOURNEY
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 1: GET ORIENTED (5 minutes)
+────────────────────────────────
+  1. Open: Main.java
+  2. Run: Click Run (green play button)
+  3. Read: Welcome message and file guide
+
+STEP 2: UNDERSTAND THE BIG PICTURE (10 minutes)
+───────────────────────────────────────────────
+  1. Open: DSAComprehensiveGuide.java
+  2. Run: See comprehensive overview
+  3. Read: All 8 topics explained
+
+STEP 3: START LEARNING (1-2 hours)
+──────────────────────────────────
+  1. Open: ArraysAndStrings.java
+  2. Read: All comments and dry runs
+  3. Run: See working examples
+  4. Modify: Change inputs and test
+  5. Study: Understand each algorithm
+
+STEP 4: PRACTICE (Throughout learning)
+──────────────────────────────────────
+  1. Solve: Related LeetCode problems
+  2. Implement: Try from scratch
+  3. Optimize: Try different approaches
+  4. Review: Check your understanding
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📖 DETAILED FILE DESCRIPTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+1️⃣ Main.java (213 lines)
+──────────────────────────
+
+PURPOSE: Entry point and navigation guide
+RUN THIS: First, to understand the workspace
+
+CONTAINS:
+  • Welcome message with ASCII art
+  • File organization overview
+  • Quick start instructions
+  • Learning timeline (Week 1-8)
+  • Tips for success
+  • Next steps
+
+KEY TAKEAWAY:
+  This file gives you the "map" of the entire workspace
+
+
+2️⃣ DSAComprehensiveGuide.java (450+ lines)
+────────────────────────────────────────────
+
+PURPOSE: Complete reference for all 8 DSA topics
+RUN THIS: Second, for comprehensive understanding
+
+TOPICS COVERED:
+  1. Arrays and Strings (concepts, tips, complexity)
+  2. Searching and Sorting (all algorithms, comparison)
+  3. Linked Lists (operations, key problems)
+  4. Stacks and Queues (definitions, applications)
+  5. Trees (traversals, BST, balance, LCA)
+  6. Graphs (DFS, BFS, Dijkstra, topological sort)
+  7. Recursion and DP (memoization, tabulation, problems)
+  8. Hashing and Advanced (tricks, bit manipulation, greedy)
+
+PLUS:
+  • Complexity analysis cheat sheet
+  • Interview preparation checklist
+  • Problem sources (LeetCode roadmap)
+  • Success tips
+  • Study strategy
+
+KEY TAKEAWAY:
+  This is your "Bible" for DSA preparation
+
+
+3️⃣ ArraysAndStrings.java (300+ lines)
+──────────────────────────────────────
+
+PURPOSE: Learn array and string algorithms
+WHEN: Week 1 of study plan
+
+ALGORITHMS (4):
+  ✓ Two Sum - Time: O(n), Space: O(1)
+    Problem: Find two numbers that add to target
+    Technique: Two-pointer on sorted array
+    DRY RUN: 5 steps showing pointer movement
+
+  ✓ Longest Substring Without Repeating - Time: O(n), Space: O(n)
+    Problem: Find length of longest substring with unique chars
+    Technique: Sliding window with HashMap
+    DRY RUN: 8 steps showing window expansion/contraction
+
+  ✓ Array Reversal - Time: O(n), Space: O(1)
+    Problem: Reverse an array in-place
+    Technique: Two-pointer from ends
+    DRY RUN: Shows each swap step
+
+  ✓ Palindrome Check - Time: O(n), Space: O(1)
+    Problem: Check if string reads same forwards/backwards
+    Technique: Two-pointer from ends
+    DRY RUN: Shows comparison steps
+
+HOW TO USE:
+  1. Read problem statement
+  2. Study the DRY RUN (most important!)
+  3. Understand the algorithm
+  4. Run the code
+  5. Modify inputs and test
+  6. Try implementing yourself
+
+KEY PATTERNS:
+  • Two-pointer technique (essential!)
+  • Sliding window technique
+  • String manipulation
+
+
+4️⃣ SearchingAndSorting.java (400+ lines)
+──────────────────────────────────────────
+
+PURPOSE: Master searching and sorting algorithms
+WHEN: Week 1-2 of study plan
+
+SEARCH ALGORITHMS (1):
+  ✓ Binary Search - Time: O(log n), Space: O(1)
+    DRY RUN: Shows how array is divided at each step
+
+SORTING ALGORITHMS (5):
+  ✓ Bubble Sort - Time: O(n²), Space: O(1)
+    DRY RUN: Shows "bubbling" of largest element each pass
+
+  ✓ Selection Sort - Time: O(n²), Space: O(1)
+    DRY RUN: Shows finding minimum in each pass
+
+  ✓ Insertion Sort - Time: O(n²) avg, O(n) best, Space: O(1)
+    DRY RUN: Shows inserting into sorted portion
+
+  ✓ Merge Sort - Time: O(n log n), Space: O(n), STABLE
+    DRY RUN: Shows divide and merge steps
+
+  ✓ Quick Sort - Time: O(n log n) avg, O(n²) worst, Space: O(log n)
+    DRY RUN: Shows partition and recursion
+
+COMPARISON TABLE:
+  Included chart comparing all algorithms
+
+KEY LEARNING:
+  • When to use each sorting algorithm
+  • Why Quick Sort is fastest on average
+  • Why Merge Sort is guaranteed O(n log n)
+  • Space vs time tradeoffs
+
+
+5️⃣ LinkedLists.java (400+ lines)
+──────────────────────────────────
+
+PURPOSE: Master linked list algorithms
+WHEN: Week 2-3 of study plan
+
+ALGORITHMS (6):
+  ✓ Insert at Beginning - Time: O(1)
+    DRY RUN: Shows creating node and linking
+
+  ✓ Insert at End - Time: O(n)
+    DRY RUN: Shows traversing to last node
+
+  ✓ Delete Node - Time: O(n)
+    DRY RUN: Shows updating links to skip node
+
+  ✓ Reverse List - Time: O(n), Space: O(1) ⭐ CRITICAL!
+    DRY RUN: 4 iterations showing pointer swapping
+    Technique: Three pointers (prev, curr, next)
+
+  ✓ Detect Cycle (Floyd's Algorithm) - Time: O(n), Space: O(1)
+    DRY RUN: Shows slow and fast pointers meeting
+    Why it works: Explained in detail
+
+  ✓ Merge Sorted Lists - Time: O(m+n), Space: O(1)
+    DRY RUN: Shows comparing and merging
+
+CRITICAL INSIGHTS:
+  • Always use dummy node for easier implementation
+  • Three-pointer technique for reversal
+  • Floyd's tortoise-hare algorithm
+
+
+6️⃣ StacksAndQueues.java (350+ lines)
+──────────────────────────────────────
+
+PURPOSE: Master stack and queue data structures
+WHEN: Week 3-4 of study plan
+
+IMPLEMENTATIONS:
+  ✓ Stack<T> class - LIFO
+    Methods: push, pop, peek, isEmpty
+    Time: O(1) for all operations
+
+  ✓ Queue<T> class - FIFO
+    Methods: enqueue, dequeue, peek, isEmpty
+    Time: O(1) for all operations
+
+ALGORITHMS (3):
+  ✓ Balanced Parentheses - Time: O(n), Space: O(n)
+    DRY RUN: Shows pushing/popping for different brackets
+
+  ✓ Reverse String - Time: O(n), Space: O(n)
+    DRY RUN: Shows push then pop sequence
+
+  ✓ Evaluate Postfix Expression - Time: O(n), Space: O(n)
+    DRY RUN: Shows stack operations for "3 4 + 5 *"
+
+APPLICATIONS:
+  Stack: Undo/redo, function calls, backtracking
+  Queue: BFS, scheduling, buffering
+
+
+7️⃣ Trees.java (450+ lines)
+──────────────────────────
+
+PURPOSE: Master tree algorithms (most important for interviews!)
+WHEN: Week 4-5 of study plan (spend extra time here!)
+
+IMPLEMENTATIONS:
+  ✓ TreeNode class - Basic node structure
+
+ALGORITHMS (9):
+  ✓ Inorder Traversal (L-N-R) - Time: O(n)
+    DRY RUN: Shows recursive calls
+    Special property: For BST, gives sorted order!
+
+  ✓ Preorder Traversal (N-L-R) - Time: O(n)
+    Use case: Tree copying
+    DRY RUN: Shows node processing before children
+
+  ✓ Postorder Traversal (L-R-N) - Time: O(n)
+    Use case: Tree deletion
+    DRY RUN: Shows node processing after children
+
+  ✓ Level Order Traversal (BFS) - Time: O(n)
+    Uses queue, shows all nodes at each level
+    DRY RUN: Shows queue operations step by step
+
+  ✓ BST Insert - Time: O(log n) avg, O(n) worst
+    DRY RUN: Shows navigating and inserting
+
+  ✓ BST Search - Time: O(log n) avg
+    DRY RUN: Shows comparison and navigation
+
+  ✓ Tree Height - Time: O(n), Space: O(h)
+    DRY RUN: Shows recursive calculation
+
+  ✓ Is Balanced Tree - Time: O(n), Space: O(h)
+    DRY RUN: Shows checking height difference
+    Definition: Height difference ≤ 1 for all nodes
+
+  ✓ Lowest Common Ancestor - Time: O(h)
+    DRY RUN: Shows finding common ancestor
+    Works for BST using comparisons
+
+KEY INSIGHTS:
+  • Inorder of BST is always sorted!
+  • Understand all 4 traversals
+  • LCA is frequently asked
+  • Balance checking is important
+
+
+8️⃣ Graphs.java (400+ lines)
+────────────────────────────
+
+PURPOSE: Master graph algorithms
+WHEN: Week 5-6 of study plan
+
+GRAPH CLASS:
+  Adjacency list representation
+  Methods to add edges, directed edges, weighted edges
+
+ALGORITHMS (5):
+  ✓ DFS (Depth-First Search) - Time: O(V+E), Space: O(V)
+    Implementation: Recursive
+    DRY RUN: Shows exploration order
+    Uses: Cycle detection, topological sort
+
+  ✓ BFS (Breadth-First Search) - Time: O(V+E), Space: O(V)
+    Implementation: Queue-based
+    DRY RUN: Shows level-by-level exploration
+    Uses: Shortest path in unweighted graphs
+
+  ✓ Dijkstra's Algorithm - Time: O((V+E) log V), Space: O(V)
+    For: Shortest path with non-negative weights
+    Implementation: Priority queue
+    DRY RUN: Shows distance updates
+
+  ✓ Floyd-Warshall - Time: O(V³), Space: O(V²)
+    For: All-pairs shortest paths
+    Can handle negative edges (no negative cycles)
+
+  ✓ Topological Sort - Time: O(V+E), Space: O(V)
+    For: Directed acyclic graphs (DAGs) only
+    DRY RUN: Shows post-order traversal using stack
+    Uses: Task scheduling, build systems
+
+CRITICAL CONCEPTS:
+  • DFS vs BFS differences
+  • When to use Dijkstra
+  • Topological sort for DAGs
+
+
+9️⃣ RecursionAndDP.java (450+ lines)
+─────────────────────────────────────
+
+PURPOSE: Master recursion and dynamic programming
+WHEN: Week 6-7 of study plan
+
+RECURSION CONCEPTS:
+  Base case (must have!)
+  Recursive case
+  Often leads to exponential time
+
+DYNAMIC PROGRAMMING:
+  Three requirements:
+    1. Overlapping subproblems
+    2. Optimal substructure
+    3. Can memoize results
+
+  Two approaches:
+    Memoization (Top-Down): Recursive + cache
+    Tabulation (Bottom-Up): Iterative + table
+
+ALGORITHMS (6):
+  ✓ Fibonacci - 3 approaches
+    Pure Recursion: O(2^n) - VERY SLOW
+    Memoization: O(n) - Much better
+    Tabulation: O(n) - Clean and iterative
+    Space Optimization: O(1) - Just two variables
+    DRY RUN: Shows each approach
+
+  ✓ Coin Change - Time: O(amount * coins), Space: O(amount)
+    Problem: Minimum coins for amount
+    dp[i] = minimum coins for amount i
+    DRY RUN: Shows filling DP table
+
+  ✓ Longest Common Subsequence - Time: O(m*n), Space: O(m*n)
+    Problem: Find longest common sequence (not contiguous)
+    2D DP table: dp[i][j] = LCS of first i and j chars
+    DRY RUN: Shows 2D table filling
+
+  ✓ 0/1 Knapsack - Time: O(n*capacity), Space: O(n*capacity)
+    Problem: Maximum value with weight limit
+    Each item used 0 or 1 time
+    DRY RUN: Shows table building and decisions
+
+KEY INSIGHTS:
+  • Identify overlapping subproblems
+  • Memoization easier to implement
+  • Tabulation more efficient
+  • Many problems reduce exponential to polynomial!
+
+
+🔟 HashingAndAdvanced.java (350+ lines)
+──────────────────────────────────────
+
+PURPOSE: Master hashing, bit manipulation, and greedy algorithms
+WHEN: Week 7-8 of study plan
+
+HASHING ALGORITHMS (3):
+  ✓ Two Sum (HashMap) - Time: O(n), Space: O(n)
+    DRY RUN: Shows HashMap lookups
+
+  ✓ First Unique Character - Time: O(n), Space: O(1)
+    DRY RUN: Shows frequency counting
+
+  ✓ Valid Anagram - Time: O(n), Space: O(1)
+    DRY RUN: Shows character comparison
+
+BIT MANIPULATION (4):
+  ✓ Power of Two Check - Time: O(1)
+    Trick: n > 0 && (n & (n-1)) == 0
+    Explanation: How bit pattern works
+
+  ✓ Count Ones - Time: O(k) where k = number of 1s
+    Technique: Brian Kernighan's algorithm
+    DRY RUN: Shows removing 1 bit each time
+
+  ✓ Single Number (XOR trick) - Time: O(n), Space: O(1)
+    DRY RUN: Shows XOR canceling duplicates
+
+GREEDY ALGORITHMS (2):
+  ✓ Activity Selection - Time: O(n log n), Space: O(1)
+    Greedy choice: Pick activity ending earliest
+    DRY RUN: Shows activity selection process
+
+  ✓ Coin Change (Greedy) - Time: O(c), Space: O(1)
+    For: Standard coin systems
+    Approach: Use largest denominations first
+
+KEY CONCEPTS:
+  • When hashing works best
+  • Bit manipulation patterns
+  • Greedy proof importance
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 REFERENCE FILES
+═══════════════════════════════════════════════════════════════════════════════
+
+README.md
+─────────
+CONTAINS:
+  • Complete learning guide
+  • File descriptions
+  • Learning features
+  • Practice roadmap
+  • Success strategies
+  • LeetCode roadmap
+
+READ THIS: When you want detailed learning guidance
+
+QUICK_REFERENCE.txt
+────────────────────
+CONTAINS:
+  • Complexity cheat sheet
+  • Algorithm comparisons
+  • Time complexity chart
+  • Data structure operations
+  • Interview tips
+  • Most important concepts
+  • Study checklist
+
+KEEP THIS OPEN: While practicing problems
+
+WORKSPACE_SUMMARY.txt
+─────────────────────
+CONTAINS:
+  • File creation summary
+  • Features overview
+  • Learning outcomes
+  • How to use guide
+  • Next steps
+
+READ THIS: After completing main.java
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 YOUR LEARNING PATH
+═══════════════════════════════════════════════════════════════════════════════
+
+WEEK 1-2: ARRAYS & STRINGS
+  → Study: ArraysAndStrings.java
+  → Also: SearchingAndSorting.java (part 1)
+  → Practice: 15-20 LeetCode problems
+
+WEEK 2-3: SEARCHING & SORTING
+  → Study: SearchingAndSorting.java (complete)
+  → Practice: 10-15 LeetCode problems
+
+WEEK 3-4: LINKED LISTS
+  → Study: LinkedLists.java (detailed!)
+  → Practice: 15-20 LeetCode problems
+
+WEEK 4-5: STACKS & QUEUES
+  → Study: StacksAndQueues.java
+  → Practice: 10-15 LeetCode problems
+
+WEEK 5-6: TREES ⭐ CRITICAL (SPEND EXTRA TIME)
+  → Study: Trees.java (very thoroughly!)
+  → Practice: 25-30 LeetCode problems (most important!)
+
+WEEK 6-7: GRAPHS
+  → Study: Graphs.java
+  → Practice: 20-25 LeetCode problems
+
+WEEK 7-8: RECURSION & DP
+  → Study: RecursionAndDP.java
+  → Practice: 30+ LeetCode problems
+
+WEEK 8: HASHING & ADVANCED
+  → Study: HashingAndAdvanced.java
+  → Practice: 15-20 LeetCode problems
+
+WEEK 8+: MASTERY
+  → Practice 100+ more problems
+  → Do 2-3 mock interviews
+  → Build interview confidence
+  → Perfect your style
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ SUCCESS CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+BEFORE CODING INTERVIEW:
+  ☐ Studied all 8 major topics
+  ☐ Implemented all 50+ algorithms
+  ☐ Solved 100+ LeetCode problems
+  ☐ Know complexity of each algorithm
+  ☐ Done 2-3 mock interviews
+  ☐ Practiced timed problem solving
+  ☐ Can implement without looking at notes
+  ☐ Understand strengths and weaknesses
+
+TECHNICAL MASTERY:
+  ☐ Know 5 sorting algorithms deeply
+  ☐ Understand DFS and BFS differences
+  ☐ Can implement BST operations
+  ☐ Understand DP patterns
+  ☐ Know common greedy approaches
+  ☐ Understand time/space tradeoffs
+  ☐ Can optimize solutions
+
+INTERVIEW SKILLS:
+  ☐ Can explain approach clearly
+  ☐ Discuss multiple solutions
+  ☐ Analyze complexity accurately
+  ☐ Ask clarifying questions
+  ☐ Test with examples
+  ☐ Handle edge cases
+  ☐ Code cleanly and quickly
+
+CONFIDENCE:
+  ☐ Feel comfortable with algorithms
+  ☐ Can solve new problems
+  ☐ Know when to use what
+  ☐ Believe in preparation
+  ☐ Ready for interview
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 QUICK START (NEXT 30 MINUTES)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Open Main.java
+   → Run it
+   → Read the welcome message
+   (5 minutes)
+
+2. Open DSAComprehensiveGuide.java
+   → Run it
+   → Read overview of all topics
+   (10 minutes)
+
+3. Open ArraysAndStrings.java
+   → Read comments and first dry run
+   → Run the code
+   → See output
+   (15 minutes)
+
+THEN:
+   → Study each file methodically
+   → Practice related problems
+   → Build skills gradually
+   → CRUSH YOUR INTERVIEW! 💯
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Final Reminder:
+
+This workspace has EVERYTHING you need for interview success.
+The question is: Will you use it consistently?
+
+💡 Pro Tip: Study 1-2 hours EVERY day, consistently.
+           That beats studying 8 hours once a week.
+
+📈 Progress: Track your LeetCode submissions.
+            Celebrate every problem solved.
+
+✨ Confidence: Build gradually with practice.
+              Review mistakes thoroughly.
+              You'll get it!
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Good luck! 🎓 You've got everything you need. Now execute! 🚀
+
