@@ -1,0 +1,464 @@
+{
+  "info": {
+    "name": "Microservices Learning - Complete API Collection",
+    "description": "Comprehensive API collection for testing all microservices concepts",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Service Registry & Health",
+      "item": [
+        {
+          "name": "Eureka Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8761",
+            "description": "View all registered services in Eureka"
+          }
+        },
+        {
+          "name": "Service Registry API",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8761/eureka/apps",
+            "description": "Get all registered applications"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication & User Service",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:8080/api/v1/users",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"ROLE_USER\"\n}"
+            },
+            "description": "Create a new user account"
+          }
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:8080/api/v1/users/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "description": "Authenticate user and get JWT token. Save the token for subsequent requests."
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/users/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Retrieve user details by ID (requires JWT token)"
+          }
+        },
+        {
+          "name": "Get User by Username",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/users/username/johndoe",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Retrieve user details by username"
+          }
+        },
+        {
+          "name": "Get All Users (Paginated)",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/users?page=0&size=10&sortBy=id&sortDir=ASC",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Get all users with pagination and sorting"
+          }
+        },
+        {
+          "name": "Get Active Users",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/users/active?page=0&size=10",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Get all active users"
+          }
+        },
+        {
+          "name": "Search Users by Name",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/users/search?name=John&page=0&size=10",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Search users by first or last name"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "url": "http://localhost:8080/api/v1/users/1",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"email\": \"john.smith@example.com\"\n}"
+            },
+            "description": "Update user information"
+          }
+        },
+        {
+          "name": "Delete User (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:8080/api/v1/users/2",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_jwt_token}}"
+              }
+            ],
+            "description": "Delete user (requires ADMIN role)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Reactive User APIs",
+      "item": [
+        {
+          "name": "Get User Reactive",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/api/v1/users/reactive/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Get user using reactive/non-blocking endpoint (WebFlux)"
+          }
+        },
+        {
+          "name": "Get All Users Reactive",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/api/v1/users/reactive",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Get all users reactively as Flux stream"
+          }
+        },
+        {
+          "name": "Stream Active Users (Server-Sent Events)",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/api/v1/users/reactive/stream",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Stream active users using Server-Sent Events (long-lived connection)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Order Management",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:8080/api/v1/orders",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"items\": [\n    {\n      \"productName\": \"Dell Laptop XPS 13\",\n      \"quantity\": 1,\n      \"price\": 1299.99\n    },\n    {\n      \"productName\": \"Wireless Mouse\",\n      \"quantity\": 2,\n      \"price\": 49.99\n    },\n    {\n      \"productName\": \"USB-C Cable\",\n      \"quantity\": 3,\n      \"price\": 19.99\n    }\n  ]\n}"
+            },
+            "description": "Create a new order. Demonstrates: Transaction, Circuit Breaker, Kafka event, RabbitMQ message, Async processing"
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/orders/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Retrieve order by ID with cached response"
+          }
+        },
+        {
+          "name": "Get Order by Order Number",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/orders/number/ORD-ABC12345",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Retrieve order by order number"
+          }
+        },
+        {
+          "name": "Get User Orders",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/orders/user/1?page=0&size=10",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Get all orders for a specific user"
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/v1/orders?page=0&size=10",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Get all orders with pagination"
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PATCH",
+            "url": "http://localhost:8080/api/v1/orders/1/status?status=PROCESSING",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Update order status (PENDING, PROCESSING, COMPLETED, CANCELLED)"
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:8080/api/v1/orders/1",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "description": "Cancel an order (must be in PENDING or PROCESSING status)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Monitoring & Health",
+      "item": [
+        {
+          "name": "API Gateway Health",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/actuator/health",
+            "description": "Check API Gateway health status"
+          }
+        },
+        {
+          "name": "User Service Health",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/actuator/health",
+            "description": "Check User Service health status"
+          }
+        },
+        {
+          "name": "Order Service Health",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8082/actuator/health",
+            "description": "Check Order Service health status"
+          }
+        },
+        {
+          "name": "Gateway Metrics",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/actuator/metrics",
+            "description": "Get all available metrics"
+          }
+        },
+        {
+          "name": "User Service Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/actuator/prometheus",
+            "description": "Get Prometheus format metrics for User Service"
+          }
+        },
+        {
+          "name": "Order Service Circuit Breakers",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8082/actuator/circuitbreakers",
+            "description": "Check circuit breaker states"
+          }
+        },
+        {
+          "name": "User Service Cache Info",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/actuator/caches",
+            "description": "Get cache statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. API Documentation",
+      "item": [
+        {
+          "name": "User Service Swagger UI",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/swagger-ui.html",
+            "description": "Interactive API documentation for User Service"
+          }
+        },
+        {
+          "name": "Order Service Swagger UI",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8082/swagger-ui.html",
+            "description": "Interactive API documentation for Order Service"
+          }
+        },
+        {
+          "name": "User Service OpenAPI JSON",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8081/v3/api-docs",
+            "description": "OpenAPI specification for User Service"
+          }
+        },
+        {
+          "name": "Order Service OpenAPI JSON",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8082/v3/api-docs",
+            "description": "OpenAPI specification for Order Service"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Bearer token from login response - Update this after login"
+    },
+    {
+      "key": "admin_jwt_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Bearer token for admin user - Update with admin credentials"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string",
+      "description": "Order ID for testing"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string",
+      "description": "User ID for testing"
+    }
+  ]
+}
+

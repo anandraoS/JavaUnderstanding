@@ -1,0 +1,66 @@
+# Default configuration for User Service
+# This file is served by Config Server
+
+spring:
+  datasource:
+    # Primary Database (PostgreSQL)
+    primary:
+      url: jdbc:postgresql://localhost:5432/userdb
+      username: postgres
+      password: postgres
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
+    # Secondary Database (MySQL) - for demonstration
+    secondary:
+      url: jdbc:mysql://localhost:3306/userdb_secondary
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: user-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+# Redis Configuration for caching
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
+
+# Custom properties
+app:
+  jwt:
+    secret: MySecretKeyForJWTTokenGenerationMustBeLongEnoughFor512BitHS512AlgorithmRequirement
+    expiration: 18000000 # 5 hours
+  async:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
+
+logging:
+  level:
+    com.learning: DEBUG
+
