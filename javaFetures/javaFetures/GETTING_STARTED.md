@@ -2,7 +2,7 @@
 
 ## 🎯 Project Overview
 
-This project contains **6 comprehensive classes** with **60+ methods** covering **100+ concepts** of the Java Collections Framework, designed specifically for developers with 10+ years of experience.
+This project contains comprehensive Java examples covering Collections, Streams, and Multithreading for 10+ years interview preparation.
 
 ## 📁 Project Structure
 
@@ -10,16 +10,33 @@ This project contains **6 comprehensive classes** with **60+ methods** covering 
 javaFetures/
 ├── src/
 │   ├── Main.java                               # Interactive menu system
-│   └── collections/
-│       ├── ListExamples.java                   # List interface examples
-│       ├── SetExamples.java                    # Set interface examples
-│       ├── MapExamples.java                    # Map interface examples
-│       ├── QueueExamples.java                  # Queue & Deque examples
-│       ├── CollectionUtilities.java            # Collections utilities
-│       └── AdvancedCollectionConcepts.java     # Advanced topics
+│   ├── collections/
+│   │   ├── ListExamples.java                   # List interface examples
+│   │   ├── SetExamples.java                    # Set interface examples
+│   │   ├── MapExamples.java                    # Map interface examples
+│   │   ├── QueueExamples.java                  # Queue & Deque examples
+│   │   ├── CollectionUtilities.java            # Collections utilities
+│   │   └── AdvancedCollectionConcepts.java     # Advanced topics
+│   ├── streams/
+│   │   ├── StreamBasics.java                   # Introduction to Streams
+│   │   ├── StreamCollectors.java               # Collectors and their uses
+│   │   ├── StreamAdvanced.java                 # Advanced Stream operations
+│   │   ├── StreamPitfalls.java                 # Common pitfalls with Streams
+│   │   └── StreamsRunner.java                  # Running Streams examples
+│   └── multithreading/
+│       ├── ThreadBasics.java                   # Introduction to Threads
+│       ├── SynchronizationExamples.java        # Thread synchronization techniques
+│       ├── ExecutorExamples.java               # Executor framework usage
+│       ├── ConcurrencyUtilitiesExamples.java   # Concurrency utilities in action
+│       ├── ConcurrentCollectionsExamples.java   # Concurrent collections overview
+│       ├── ThreadingPitfalls.java              # Common threading pitfalls
+│       └── ThreadingRunner.java                # Running multithreading examples
 ├── compile.bat                                  # Compilation script
 ├── run.bat                                      # Run script
-└── README.md                                    # Comprehensive documentation
+├── README.md                                    # Comprehensive documentation
+├── STREAMS_GUIDE.md                            # Detailed guide on Java Streams
+├── MULTITHREADING_GUIDE.md                     # Detailed guide on Multithreading
+└── GETTING_STARTED.md                          # Quick start guide
 ```
 
 ## 🚀 Quick Start
@@ -46,6 +63,8 @@ run.bat
 ```bash
 cd src
 javac collections/*.java
+javac streams/*.java
+javac multithreading/*.java
 javac Main.java
 ```
 
@@ -62,6 +81,8 @@ java collections.MapExamples
 java collections.QueueExamples
 java collections.CollectionUtilities
 java collections.AdvancedCollectionConcepts
+java streams.StreamsRunner
+java multithreading.ThreadingRunner
 ```
 
 ## 📚 What You'll Learn
@@ -174,9 +195,143 @@ java collections.AdvancedCollectionConcepts
 
 ---
 
+### 7. StreamBasics.java (5 methods)
+- Introduction to Streams and their benefits
+- Creating Streams from collections, arrays, and values
+- Stream operations: map, filter, reduce
+- Commonly used collectors
+- Parallel streams and performance considerations
+
+**Key Questions:**
+- What is a Stream in Java?
+- How do you create a Stream?
+- What are the advantages of using parallel streams?
+
+---
+
+### 8. StreamCollectors.java (4 methods)
+- Using Collectors to accumulate elements
+- Joining strings with Collectors.joining()
+- Grouping elements with Collectors.groupingBy()
+- Partitioning elements with Collectors.partitioningBy()
+
+**Key Questions:**
+- How do Collectors work in Java Streams?
+- What is the purpose of Collectors.joining()?
+- How can you group elements of a Stream?
+
+---
+
+### 9. StreamAdvanced.java (5 methods)
+- FlatMap for handling nested structures
+- Optional class and its usage with Streams
+- Custom collectors implementation
+- Performance tuning for Streams
+- Debugging Streams with peek()
+
+**Key Questions:**
+- What is the difference between map() and flatMap()?
+- How do you create a custom collector?
+- What are some common performance pitfalls with Streams?
+
+---
+
+### 10. StreamPitfalls.java (3 methods)
+- Common mistakes made while using Streams
+- How to avoid memory leaks with Streams
+- Best practices for using Streams in production
+
+**Key Questions:**
+- What are the common pitfalls when using Java Streams?
+- How can you avoid memory leaks with Streams?
+- What are the best practices for using Streams?
+
+---
+
+### 11. ThreadBasics.java (6 methods)
+- Creating and starting threads
+- Thread lifecycle and states
+- Joining threads and synchronization basics
+- Volatile keyword and its impact
+- Thread priorities and scheduling
+- Daemon threads vs user threads
+
+**Key Questions:**
+- How do you create a thread in Java?
+- What is the thread lifecycle in Java?
+- How do you ensure that a thread has completed its execution?
+
+---
+
+### 12. SynchronizationExamples.java (5 methods)
+- Synchronized methods vs synchronized blocks
+- Locks and ReentrantLock usage
+- Deadlock situations and avoidance
+- Starvation and livelock scenarios
+- Best practices for synchronization
+
+**Key Questions:**
+- What is the difference between synchronized methods and synchronized blocks?
+- How does ReentrantLock improve upon the basic synchronized keyword?
+- What are common pitfalls that lead to deadlocks?
+
+---
+
+### 13. ExecutorExamples.java (4 methods)
+- Using Executors to manage thread pools
+- Callable and Future for asynchronous tasks
+- ScheduledExecutorService for periodic tasks
+- Shutting down the executor service
+
+**Key Questions:**
+- What are the benefits of using the Executor framework?
+- How do you submit a task for asynchronous execution?
+- What is the difference between Callable and Runnable?
+
+---
+
+### 14. ConcurrencyUtilitiesExamples.java (4 methods)
+- CountDownLatch for synchronizing threads
+- CyclicBarrier for coordinating thread execution
+- Semaphore for controlling access to resources
+- Exchanger for swapping data between threads
+
+**Key Questions:**
+- How does CountDownLatch work?
+- When would you use a CyclicBarrier?
+- What is the purpose of a Semaphore in Java?
+
+---
+
+### 15. ConcurrentCollectionsExamples.java (5 methods)
+- Overview of concurrent collections in Java
+- Using CopyOnWriteArrayList
+- Using ConcurrentHashMap
+- BlockingQueue implementations
+- ConcurrentSkipListMap for concurrent access
+
+**Key Questions:**
+- What are the advantages of using concurrent collections?
+- How does ConcurrentHashMap achieve thread safety?
+- When would you use a BlockingQueue?
+
+---
+
+### 16. ThreadingPitfalls.java (3 methods)
+- Common pitfalls in multithreaded programming
+- How to avoid race conditions
+- Best practices for thread safety
+
+**Key Questions:**
+- What are the common pitfalls in multithreaded Java applications?
+- How can race conditions be avoided?
+- What are the best practices for ensuring thread safety?
+
+---
+
 ## 🎮 Interactive Menu System
 
-The Main.java provides an interactive menu with 7 options:
+The Main.java provides an interactive menu with 9 options:
 
 ```
 1. List Examples - Deep dive into List implementations
@@ -186,6 +341,8 @@ The Main.java provides an interactive menu with 7 options:
 5. Collection Utilities - Framework utilities
 6. Advanced Concepts - Performance and optimization
 7. Run ALL Examples - Execute everything in sequence
+8. Streams - Complete guide
+9. Multithreading - Complete guide
 0. Exit
 ```
 
@@ -294,6 +451,8 @@ C:\Program Files\Java\jdk-XX\bin\javac Main.java
 # Ensure you're in the src directory
 cd src
 javac collections/*.java
+javac streams/*.java
+javac multithreading/*.java
 javac Main.java
 ```
 
@@ -309,6 +468,8 @@ java Main
 - **Source Code**: All files in `src/` directory
 - **Documentation**: README.md (comprehensive guide)
 - **This File**: GETTING_STARTED.md (quick reference)
+- **Streams Guide**: STREAMS_GUIDE.md (in-depth look at Java Streams)
+- **Multithreading Guide**: MULTITHREADING_GUIDE.md (in-depth look at Multithreading)
 
 ## ✅ Success Metrics
 
@@ -320,6 +481,8 @@ After completing this tutorial, you should be able to:
 - [ ] Avoid common pitfalls and anti-patterns
 - [ ] Answer advanced collection framework interview questions
 - [ ] Implement custom collections when needed
+- [ ] Utilize Java Streams for efficient data processing
+- [ ] Apply multithreading concepts to solve complex problems
 
 ## 🎓 Next Steps
 
@@ -342,7 +505,7 @@ run.bat
 
 # Or manually
 cd src
-javac Main.java collections/*.java
+javac Main.java collections/*.java streams/*.java multithreading/*.java
 java Main
 ```
 
@@ -351,4 +514,3 @@ java Main
 ---
 
 *Questions or issues? Review the README.md for detailed explanations of all concepts.*
-

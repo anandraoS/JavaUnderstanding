@@ -120,6 +120,38 @@ This project contains comprehensive examples covering all aspects of the Java Co
 
 ---
 
+### 7. **Streams Package** - Streams End-to-End (Interview Level)
+- ✅ Stream creation, laziness, intermediate vs terminal
+- ✅ map vs flatMap, reduce, primitive streams
+- ✅ Collectors: groupingBy, partitioningBy, toMap, joining
+- ✅ Parallel streams and ordering
+- ✅ Spliterator basics and custom collectors
+- ✅ Common pitfalls (reuse, side effects, ordering)
+
+**Key Concepts:**
+- Stream pipeline design
+- Correct reduction in parallel
+- Collector selection and downstreams
+- Avoiding side effects
+
+---
+
+### 8. **Multithreading Package** - Concurrency End-to-End (Interview Level)
+- ✅ Thread lifecycle, interrupt, join, naming
+- ✅ Synchronization, locks, visibility, atomics
+- ✅ ExecutorService, Future, CompletableFuture, scheduling
+- ✅ Concurrency utilities: CountDownLatch, CyclicBarrier, Semaphore, Phaser
+- ✅ Concurrent collections and BlockingQueue
+- ✅ Deadlock avoidance and ThreadLocal usage
+
+**Key Concepts:**
+- Visibility vs atomicity
+- Race conditions and fixes
+- Executor sizing and shutdown
+- Safe concurrency patterns
+
+---
+
 ## 🎯 Key Interview Questions Covered
 
 ### Beginner to Intermediate
@@ -150,17 +182,21 @@ This project contains comprehensive examples covering all aspects of the Java Co
 ### Run All Examples
 ```bash
 javac src/collections/*.java
+javac src/streams/*.java
+javac src/multithreading/*.java
 java -cp src collections.ListExamples
 java -cp src collections.SetExamples
 java -cp src collections.MapExamples
 java -cp src collections.QueueExamples
 java -cp src collections.CollectionUtilities
 java -cp src collections.AdvancedCollectionConcepts
+java -cp src streams.StreamsRunner
+java -cp src multithreading.ThreadingRunner
 ```
 
 ### Run from Main Menu
 ```bash
-javac src/Main.java src/collections/*.java
+javac src/Main.java src/collections/*.java src/streams/*.java src/multithreading/*.java
 java -cp src Main
 ```
 

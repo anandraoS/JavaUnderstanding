@@ -1,4 +1,6 @@
 import collections.*;
+import streams.*;
+import multithreading.*;
 import java.util.Scanner;
 
 /**
@@ -11,7 +13,7 @@ public class Main {
 
         while (true) {
             printMenu();
-            System.out.print("\nEnter your choice (0-7): ");
+            System.out.print("\nEnter your choice (0-9): ");
 
             try {
                 int choice = scanner.nextInt();
@@ -76,6 +78,12 @@ public class Main {
         System.out.println("  7. 🚀 Run ALL Examples");
         System.out.println("     - Execute all tutorials in sequence (recommended for review)");
         System.out.println();
+        System.out.println("  8. 🌊 Streams (Complete Guide)");
+        System.out.println("     - Stream basics, collectors, advanced topics, pitfalls");
+        System.out.println();
+        System.out.println("  9. 🧵 Multithreading (Complete Guide)");
+        System.out.println("     - Threads, synchronization, executors, utilities, pitfalls");
+        System.out.println();
         System.out.println("  0. 🚪 Exit");
         System.out.println();
         System.out.println("=".repeat(80));
@@ -135,11 +143,27 @@ public class Main {
                 System.out.println("\n" + "▶".repeat(40) + " ADVANCED CONCEPTS " + "▶".repeat(40));
                 AdvancedCollectionConcepts.main(new String[]{});
 
+                System.out.println("\n" + "▶".repeat(40) + " STREAMS " + "▶".repeat(40));
+                StreamsRunner.main(new String[]{});
+
+                System.out.println("\n" + "▶".repeat(40) + " MULTITHREADING " + "▶".repeat(40));
+                ThreadingRunner.main(new String[]{});
+
                 System.out.println("\n✅ ALL EXAMPLES COMPLETED!");
                 break;
 
+            case 8:
+                System.out.println("🌊 STREAMS - COMPLETE GUIDE\n");
+                StreamsRunner.main(new String[]{});
+                break;
+
+            case 9:
+                System.out.println("🧵 MULTITHREADING - COMPLETE GUIDE\n");
+                ThreadingRunner.main(new String[]{});
+                break;
+
             default:
-                System.out.println("❌ Invalid choice. Please select 0-7.");
+                System.out.println("❌ Invalid choice. Please select 0-9.");
         }
     }
 }
