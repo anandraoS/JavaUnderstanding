@@ -1,0 +1,80 @@
+# Docker Compose configuration for development with hot-reload
+# This setup is optimized for development, NOT production
+
+version: '3.8'
+
+services:
+  # Development MySQL
+  mysql:
+    image: mysql:8.0-alpine
+    container_name: mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: devdb
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_dev_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Development Spring Boot Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-dev
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/devdb
+      SPRING_DATASOURCE_USERNAME: dev
+      SPRING_DATASOURCE_PASSWORD: dev
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop  # Auto-create schema in dev
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port for remote debugging
+    volumes:
+      - ./src:/app/src  # Mount source code for hot-reload
+      - ./target:/app/target
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app_dev_network
+    environment:
+      JAVA_OPTS: "-Xmx256m -Xms256m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
+  # Development Angular Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: angular-dev
+    ports:
+      - "4200:4200"  # Angular dev server
+      - "3000:3000"  # Alternative port
+    volumes:
+      - ./frontend/src:/app/src        # Hot-reload source
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/angular.json:/app/angular.json
+    depends_on:
+      - backend
+    networks:
+      - app_dev_network
+    command: npm start  # Run ng serve for development
+
+volumes:
+  mysql_dev_data:
+
+networks:
+  app_dev_network:
+    driver: bridge
+

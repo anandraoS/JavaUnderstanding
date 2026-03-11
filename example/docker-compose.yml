@@ -1,0 +1,215 @@
+# Docker Compose Configuration for Complete Stack
+# Demonstrates how to run Spring Boot, Angular, and MySQL together
+
+version: '3.8'
+
+# Define services (containers)
+services:
+  # ============= MYSQL DATABASE =============
+  mysql:
+    image: mysql:8.0-alpine
+    container_name: mysql-db
+
+    # Environment variables for MySQL initialization
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: applicationdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword123
+      # MySQL configuration
+      MYSQL_TCP_PORT: 3306
+
+    # Port mapping: host:container
+    # Only map if accessing from outside Docker network
+    ports:
+      - "3306:3306"
+
+    # Named volume for persistent data
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Optional: Mount init script for schema creation
+      # - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+
+    # Health check for MySQL
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+    # Network
+    networks:
+      - app_network
+
+    # Resource limits (production)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Keep container running
+    restart: unless-stopped
+
+  # ============= SPRING BOOT BACKEND =============
+  backend:
+    # Build from local Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: spring-backend
+
+    # Set environment variables
+    environment:
+      # Database connection
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/applicationdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppassword123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+
+      # JPA/Hibernate configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+
+      # Spring configuration
+      SPRING_APPLICATION_NAME: my-app
+      SPRING_PROFILES_ACTIVE: docker
+
+      # Java options
+      JAVA_OPTS: -Xmx512m -Xms256m -XX:+UseG1GC
+
+    # Port mapping
+    ports:
+      - "8080:8080"
+
+    # Volumes (optional)
+    volumes:
+      - app_logs:/app/logs
+
+    # Depends on MySQL (starts after MySQL)
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    # Health check for Spring Boot
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+    # Network
+    networks:
+      - app_network
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    restart: unless-stopped
+
+  # ============= ANGULAR FRONTEND =============
+  frontend:
+    # Build from local Angular Dockerfile
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: angular-frontend
+
+    # Port mapping
+    ports:
+      - "80:80"
+
+    # Depends on backend (for API proxy)
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    # Environment variables
+    environment:
+      # Backend URL (used by Angular for API calls)
+      BACKEND_URL: http://backend:8080
+
+    # Network
+    networks:
+      - app_network
+
+    # Volumes (optional: for logging)
+    volumes:
+      - nginx_logs:/var/log/nginx
+
+    # Health check for Nginx
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    restart: unless-stopped
+
+# ============= NAMED VOLUMES =============
+# Volumes are stored on host machine, persist after container stops
+volumes:
+  mysql_data:
+    driver: local
+  app_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+
+# ============= NETWORKS =============
+# Define custom bridge network for container communication
+networks:
+  app_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============= USAGE COMMANDS =============
+# docker-compose up -d                  # Start all services in background
+# docker-compose down                   # Stop and remove all services
+# docker-compose logs -f                # View logs from all services
+# docker-compose logs -f backend        # View logs from specific service
+# docker-compose ps                     # List running services
+# docker-compose exec backend bash      # Execute command in container
+# docker-compose down -v                # Stop and remove volumes too
+
