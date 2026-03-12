@@ -164,31 +164,40 @@ public class UserService {
     @Async("taskExecutor")
     @Transactional("secondaryTransactionManager")
     public CompletableFuture<Void> createAuditAsync(Long userId, String username, String action, String details) {
-        log.info("Creating audit log for user: {} - action: {}", username, action);
+        try {
+            log.info("Creating audit log for user: {} - action: {}", username, action);
 
-        UserAudit audit = UserAudit.builder()
-                .userId(userId)
-                .username(username)
-                .action(action)
-                .details(details)
-                .performedAt(LocalDateTime.now())
-                .build();
+            UserAudit audit = UserAudit.builder()
+                    .userId(userId)
+                    .username(username)
+                    .action(action)
+                    .details(details)
+                    .performedAt(LocalDateTime.now())
+                    .build();
 
-        userAuditRepository.save(audit);
+            userAuditRepository.save(audit);
+        } catch (Exception e) {
+            log.warn("Could not save audit log (secondary DB unavailable?): {}", e.getMessage());
+        }
         return CompletableFuture.completedFuture(null);
     }
 
     private void publishUserEvent(User user, String eventType) {
-        UserEvent event = UserEvent.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .eventType(eventType)
-                .timestamp(LocalDateTime.now())
-                .build();
+        try {
+            UserEvent event = UserEvent.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .eventType(eventType)
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        kafkaTemplate.send(AppConstants.TOPIC_USER_EVENTS, event);
-        log.info("Published user event: {} for user: {}", eventType, user.getUsername());
+            kafkaTemplate.send(AppConstants.TOPIC_USER_EVENTS, event);
+            log.info("Published user event: {} for user: {}", eventType, user.getUsername());
+        } catch (Exception e) {
+            // Kafka not available locally — log and continue (non-critical)
+            log.warn("Could not publish user event (Kafka unavailable?): {}", e.getMessage());
+        }
     }
 
     private UserDTO mapToDTO(User user) {

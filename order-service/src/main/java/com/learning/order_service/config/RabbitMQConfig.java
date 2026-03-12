@@ -5,14 +5,19 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * RabbitMQ Configuration
  * Demonstrates: Message queue configuration, Exchange, Queue, Binding
+ *
+ * Only activates when spring.rabbitmq.enabled=true (set in docker-compose profile).
+ * This lets the service start locally without RabbitMQ running.
  */
 @Configuration
+@ConditionalOnProperty(name = "spring.rabbitmq.enabled", havingValue = "true", matchIfMissing = false)
 public class RabbitMQConfig {
 
     public static final String ORDER_QUEUE = "order.queue";
@@ -65,4 +70,3 @@ public class RabbitMQConfig {
         return template;
     }
 }
-

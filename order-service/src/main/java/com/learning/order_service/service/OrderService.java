@@ -202,18 +202,22 @@ public class OrderService {
     }
 
     private void publishOrderEvent(Order order, String eventType) {
-        OrderEvent event = OrderEvent.builder()
-                .orderId(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .userId(order.getUserId())
-                .totalAmount(order.getTotalAmount())
-                .status(order.getStatus())
-                .eventType(eventType)
-                .timestamp(LocalDateTime.now())
-                .build();
+        try {
+            OrderEvent event = OrderEvent.builder()
+                    .orderId(order.getId())
+                    .orderNumber(order.getOrderNumber())
+                    .userId(order.getUserId())
+                    .totalAmount(order.getTotalAmount())
+                    .status(order.getStatus())
+                    .eventType(eventType)
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        kafkaTemplate.send(AppConstants.TOPIC_ORDER_EVENTS, event);
-        log.info("Published order event: {} for order: {}", eventType, order.getOrderNumber());
+            kafkaTemplate.send(AppConstants.TOPIC_ORDER_EVENTS, event);
+            log.info("Published order event: {} for order: {}", eventType, order.getOrderNumber());
+        } catch (Exception e) {
+            log.warn("Could not publish order event (Kafka unavailable?): {}", e.getMessage());
+        }
     }
 
     private String generateOrderNumber() {

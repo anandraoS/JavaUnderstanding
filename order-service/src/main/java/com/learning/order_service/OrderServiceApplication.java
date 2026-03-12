@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
@@ -15,18 +14,22 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * - Circuit Breaker with Resilience4j
  * - Retry mechanisms
  * - Inter-service communication with WebClient
- * - Caching with Redis
+ * - Caching (in-memory fallback when Redis not available)
  * - Event-driven architecture
+ * - H2 in-memory DB for local dev (no PostgreSQL needed)
+ *
+ * RabbitMQ/Redis: conditional beans handle availability gracefully.
+ * No external infrastructure needed to start locally.
  */
-@SpringBootApplication(scanBasePackages = {"com.learning.order_service", "com.learning.common_library"})
+@SpringBootApplication(
+    scanBasePackages = {"com.learning.order_service", "com.learning.common_library"}
+)
 @EnableDiscoveryClient
 @EnableCaching
 @EnableAsync
-@EnableKafka
 public class OrderServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(OrderServiceApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(OrderServiceApplication.class, args);
+    }
 }

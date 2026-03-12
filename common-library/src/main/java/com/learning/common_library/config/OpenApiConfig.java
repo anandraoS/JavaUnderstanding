@@ -7,14 +7,19 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.Components;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * OpenAPI (Swagger) Configuration
  * Demonstrates: API documentation with Swagger/OpenAPI
+ *
+ * Only activates when springdoc/swagger classes are on classpath.
+ * The api-gateway (WebFlux) won't load this since it excludes WebMVC springdoc.
  */
 @Configuration
+@ConditionalOnClass(name = "io.swagger.v3.oas.models.OpenAPI")
 public class OpenApiConfig {
 
     @Bean

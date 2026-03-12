@@ -1,9 +1,12 @@
 package com.learning.user_service.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -16,12 +19,20 @@ import java.time.Duration;
 
 /**
  * Redis Cache Configuration
- * Demonstrates: Caching strategies with Redis
+ * Demonstrates: Caching strategies with Redis, Conditional beans, Fallback patterns
+ *
+ * - When Redis IS available: uses RedisCacheManager for distributed caching
+ * - When Redis IS NOT available: falls back to in-memory ConcurrentMapCacheManager
+ *   (service still starts without Redis locally)
  */
 @Configuration
-public class RedisConfig extends CachingConfigurerSupport {
+public class RedisConfig {
 
+    /**
+     * RedisTemplate — only created when RedisConnectionFactory exists (Redis running).
+     */
     @Bean
+    @ConditionalOnBean(RedisConnectionFactory.class)
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -32,8 +43,13 @@ public class RedisConfig extends CachingConfigurerSupport {
         return template;
     }
 
+    /**
+     * Redis-based CacheManager — used when Redis is available.
+     */
     @Bean
-    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+    @Primary
+    @ConditionalOnBean(RedisConnectionFactory.class)
+    public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair
@@ -46,5 +62,14 @@ public class RedisConfig extends CachingConfigurerSupport {
                 .cacheDefaults(cacheConfig)
                 .build();
     }
-}
 
+    /**
+     * Fallback in-memory CacheManager — used when Redis is NOT available (local dev).
+     * This lets @Cacheable / @CacheEvict / @CachePut still work without Redis.
+     */
+    @Bean
+    @ConditionalOnMissingBean(CacheManager.class)
+    public CacheManager fallbackCacheManager() {
+        return new ConcurrentMapCacheManager("users", "orders");
+    }
+}

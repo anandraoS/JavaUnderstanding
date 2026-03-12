@@ -11,9 +11,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * Key Concepts:
  * - Single entry point for all microservices
  * - Request routing and filtering
- * - Authentication and authorization at gateway level
+ * - JWT validation at gateway level (X-Username / X-Role forwarded to services)
  * - Circuit breaker integration
- * - Rate limiting and throttling
+ * - Rate limiting (requires Redis — optional dependency)
  * - CORS configuration
  * - Load balancing through Eureka
  */
@@ -21,8 +21,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 public class ApiGatewayApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ApiGatewayApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(ApiGatewayApplication.class, args);
+    }
 }

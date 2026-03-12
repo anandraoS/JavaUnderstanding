@@ -1,10 +1,9 @@
-spring:
-  application:
-    name: user-service
 # User Service Bootstrap Configuration
 # Detailed configuration is loaded from Config Server
 
 spring:
+  main:
+    web-application-type: servlet   # Force MVC mode (both web+webflux on classpath)
   application:
     name: user-service
   config:
@@ -15,6 +14,49 @@ spring:
       retry:
         max-attempts: 5
         initial-interval: 1000
+  # ─── LOCAL DEV FALLBACK (overridden by Config Server when running) ───────────
+  # Use H2 in-memory so the service starts without PostgreSQL/MySQL installed
+  datasource:
+    primary:
+      url: jdbc:h2:mem:userdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+    secondary:
+      url: jdbc:h2:mem:userdb_secondary;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+  # Kafka: auto-create topics disabled so no broker required for startup
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      auto-startup: false   # Don't connect to broker on startup (no Kafka locally)
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: user-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+  # Redis: connect to localhost; service degrades gracefully if Redis not running
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000
 
 server:
   port: 8081
@@ -29,6 +71,16 @@ eureka:
   instance:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 10
+
+# Custom App Properties
+app:
+  jwt:
+    secret: MySecretKeyForJWTTokenGenerationMustBeLongEnoughFor512BitHS512AlgorithmRequirement
+    expiration: 18000000
+  async:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
 
 # Actuator Endpoints
 management:

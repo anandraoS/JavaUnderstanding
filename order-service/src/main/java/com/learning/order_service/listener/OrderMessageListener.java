@@ -2,6 +2,7 @@ package com.learning.order_service.listener;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -9,9 +10,12 @@ import java.util.Map;
 /**
  * RabbitMQ Message Consumer
  * Demonstrates: Message queue consumption
+ *
+ * Only activated when spring.rabbitmq.enabled=true (docker-compose).
  */
 @Component
 @Slf4j
+@ConditionalOnProperty(name = "spring.rabbitmq.enabled", havingValue = "true", matchIfMissing = false)
 public class OrderMessageListener {
 
     @RabbitListener(queues = "order.queue")
@@ -27,4 +31,3 @@ public class OrderMessageListener {
         // Add your business logic here
     }
 }
-

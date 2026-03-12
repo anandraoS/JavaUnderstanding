@@ -11,6 +11,8 @@ import java.util.Objects;
 /**
  * Scheduled Tasks
  * Demonstrates: @Scheduled annotation, Cron expressions, Task execution
+ *
+ * Cron expression format: second minute hour day-of-month month day-of-week
  */
 @Component
 @RequiredArgsConstructor
@@ -23,9 +25,13 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 */30 * * * *")
     public void clearCache() {
         log.info("Scheduled task: Clearing cache");
-        cacheManager.getCacheNames()
-                .forEach(cacheName -> Objects.requireNonNull(cacheManager.getCache(cacheName)).clear());
-        log.info("Cache cleared successfully");
+        try {
+            cacheManager.getCacheNames()
+                    .forEach(cacheName -> Objects.requireNonNull(cacheManager.getCache(cacheName)).clear());
+            log.info("Cache cleared successfully");
+        } catch (Exception e) {
+            log.warn("Cache clear skipped (cache manager unavailable?): {}", e.getMessage());
+        }
     }
 
     // Run every hour at the top of the hour
@@ -51,4 +57,3 @@ public class ScheduledTasks {
         // Health check logic
     }
 }
-

@@ -1,10 +1,9 @@
-spring:
-  application:
-    name: api-gateway
 # API Gateway Configuration
 # This file bootstraps the gateway, detailed config comes from Config Server
 
 spring:
+  main:
+    web-application-type: reactive   # API Gateway is always WebFlux/reactive
   application:
     name: api-gateway
   config:

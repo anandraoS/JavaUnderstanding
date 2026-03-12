@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UserEventListener {
 
-    @KafkaListener(topics = "user-events", groupId = "order-service-group")
+    @KafkaListener(topics = "user-events", groupId = "order-service-group", autoStartup = "false")
     public void handleUserEvent(UserEvent event) {
         log.info("Received user event: {} for user: {}", event.getEventType(), event.getUsername());
 

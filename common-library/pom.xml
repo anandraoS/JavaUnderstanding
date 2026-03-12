@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.3</version>
+		<version>3.3.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.learning</groupId>
@@ -29,18 +29,20 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<spring-cloud.version>2024.0.1</spring-cloud.version>
+		<spring-cloud.version>2023.0.3</spring-cloud.version>
 	</properties>
 	<dependencies>
-		<!-- Spring Boot Starters -->
+		<!-- Spring Web — marked optional so consumers choose MVC or WebFlux themselves -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Lombok for reducing boilerplate -->
@@ -50,7 +52,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- JWT -->
+		<!-- JWT (JJWT 0.12.x) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -79,11 +81,21 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 
-		<!-- Swagger/OpenAPI -->
+		<!--
+		  Swagger/OpenAPI models — optional so this library compiles OpenApiConfig.
+		  Each consuming service brings its own springdoc-openapi-starter.
+		-->
 		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-models-jakarta</artifactId>
+			<version>2.2.22</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations-jakarta</artifactId>
+			<version>2.2.22</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
