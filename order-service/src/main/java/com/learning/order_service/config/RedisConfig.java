@@ -1,4 +1,4 @@
-package com.learning.user_service.config;
+package com.learning.order_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,27 +13,21 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.time.Duration;
 
 /**
- * Redis Cache Configuration
+ * Redis Cache Configuration for Order Service
  * Demonstrates: Distributed caching with Redis
  *
  * CONCEPTS:
- * 1. RedisTemplate — low-level Redis operations (GET, SET, HASH, LIST)
- * 2. RedisCacheManager — integrates with Spring's @Cacheable / @CacheEvict
- * 3. Serialization — how Java objects are stored in Redis (JSON format)
- * 4. TTL (Time-To-Live) — cached entries auto-expire after 10 minutes
+ * 1. RedisTemplate — direct Redis operations (GET, SET, HASH)
+ * 2. RedisCacheManager — powers @Cacheable / @CacheEvict on OrderService methods
+ * 3. TTL 10 min — cached orders expire after 10 minutes
  *
  * Redis must be running: brew services start redis
  * Verify: redis-cli ping → PONG
+ * Check cache: redis-cli → KEYS *
  */
 @Configuration
 public class RedisConfig {
 
-    /**
-     * RedisTemplate for direct Redis operations.
-     * Use this when you need fine-grained control beyond @Cacheable.
-     * Example: redisTemplate.opsForValue().set("key", value);
-     *          redisTemplate.opsForHash().put("hashKey", "field", value);
-     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -45,10 +39,6 @@ public class RedisConfig {
         return template;
     }
 
-    /**
-     * RedisCacheManager — powers @Cacheable, @CachePut, @CacheEvict annotations.
-     * All cached entries use JSON serialization and expire after 10 minutes.
-     */
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
@@ -64,3 +54,4 @@ public class RedisConfig {
                 .build();
     }
 }
+

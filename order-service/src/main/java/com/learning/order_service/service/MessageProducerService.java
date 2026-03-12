@@ -2,9 +2,9 @@ package com.learning.order_service.service;
 
 import com.learning.order_service.config.RabbitMQConfig;
 import com.learning.order_service.entity.Order;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -12,29 +12,28 @@ import java.util.Map;
 
 /**
  * RabbitMQ Message Producer
- * Demonstrates: Message broker, Async communication, Conditional beans
+ * Demonstrates: Publishing messages to RabbitMQ exchanges
  *
- * RabbitTemplate is injected as Optional so the service starts even
- * when RabbitMQ is not available locally (local dev mode).
+ * CONCEPTS:
+ * 1. RabbitTemplate — Spring's helper to send messages to RabbitMQ
+ * 2. convertAndSend(exchange, routingKey, message) — sends a message
+ * 3. The message goes: RabbitTemplate → Exchange → Queue → Consumer
+ *
+ * This producer sends order notifications that OrderMessageListener consumes.
  */
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class MessageProducerService {
 
-    // Optional injection — null when RabbitAutoConfiguration is excluded
     private final RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    public MessageProducerService(@Autowired(required = false) RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
-    }
-
+    /**
+     * Send order notification to RabbitMQ.
+     * The notification is published to the NOTIFICATION_EXCHANGE with NOTIFICATION_ROUTING_KEY.
+     * OrderMessageListener picks it up from the notification.queue.
+     */
     public void sendOrderNotification(Order order) {
-        if (rabbitTemplate == null) {
-            log.warn("RabbitMQ not configured — skipping notification for order: {}", order.getOrderNumber());
-            return;
-        }
-
         log.info("Sending order notification to RabbitMQ: {}", order.getOrderNumber());
 
         Map<String, Object> message = new HashMap<>();

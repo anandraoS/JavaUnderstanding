@@ -1,5 +1,18 @@
-# User Service Bootstrap Configuration
-# Detailed configuration is loaded from Config Server
+# ═══════════════════════════════════════════════════════════════════════════════
+# User Service Configuration — ALL INFRASTRUCTURE ENABLED
+# ═══════════════════════════════════════════════════════════════════════════════
+# Prerequisites (installed via brew on Mac):
+#   brew services start postgresql
+#   brew services start mysql
+#   brew services start redis
+#   brew services start kafka       (also starts zookeeper)
+#   brew services start rabbitmq    (used by order-service)
+#   Run Zipkin: java -jar zipkin.jar OR brew install zipkin && zipkin
+#
+# Create databases before first run:
+#   psql -U postgres -c "CREATE DATABASE userdb;"
+#   mysql -u root -e "CREATE DATABASE IF NOT EXISTS user_audit_db;"
+# ═══════════════════════════════════════════════════════════════════════════════
 
 spring:
   main:
@@ -14,34 +27,35 @@ spring:
       retry:
         max-attempts: 5
         initial-interval: 1000
-  # ─── LOCAL DEV FALLBACK (overridden by Config Server when running) ───────────
-  # Use H2 in-memory so the service starts without PostgreSQL/MySQL installed
+
+  # ─── PRIMARY DATABASE: PostgreSQL (stores users) ─────────────────────────────
   datasource:
     primary:
-      url: jdbc:h2:mem:userdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      username: sa
-      password:
-      driver-class-name: org.h2.Driver
+      url: jdbc:postgresql://localhost:5432/userdb
+      username: postgres
+      password: postgres
+      driver-class-name: org.postgresql.Driver
+    # ─── SECONDARY DATABASE: MySQL (stores audit logs) ─────────────────────────
     secondary:
-      url: jdbc:h2:mem:userdb_secondary;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      username: sa
+      url: jdbc:mysql://localhost:3306/user_audit_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      username: root
       password:
-      driver-class-name: org.h2.Driver
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # ─── JPA / Hibernate ────────────────────────────────────────────────────────
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update         # Create/update tables automatically
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      enabled: true
-  # Kafka: auto-create topics disabled so no broker required for startup
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # ─── KAFKA: Event streaming ─────────────────────────────────────────────────
+  # Publishes USER_CREATED/UPDATED/DELETED events for order-service to consume
   kafka:
     bootstrap-servers: localhost:9092
-    listener:
-      auto-startup: false   # Don't connect to broker on startup (no Kafka locally)
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -51,7 +65,9 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-  # Redis: connect to localhost; service degrades gracefully if Redis not running
+
+  # ─── REDIS: Distributed caching ─────────────────────────────────────────────
+  # Caches user lookups. See @Cacheable in UserService.java
   data:
     redis:
       host: localhost
@@ -61,7 +77,7 @@ spring:
 server:
   port: 8081
 
-# Eureka Client
+# ─── Eureka Client: Service Discovery ─────────────────────────────────────────
 eureka:
   client:
     service-url:
@@ -72,17 +88,17 @@ eureka:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 10
 
-# Custom App Properties
+# ─── Custom App Properties ────────────────────────────────────────────────────
 app:
   jwt:
     secret: MySecretKeyForJWTTokenGenerationMustBeLongEnoughFor512BitHS512AlgorithmRequirement
-    expiration: 18000000
+    expiration: 18000000    # 5 hours in milliseconds
   async:
     core-pool-size: 5
     max-pool-size: 10
     queue-capacity: 100
 
-# Actuator Endpoints
+# ─── Actuator: Monitoring endpoints ───────────────────────────────────────────
 management:
   endpoints:
     web:
@@ -91,18 +107,20 @@ management:
   endpoint:
     health:
       show-details: always
+  # ─── Zipkin: Distributed tracing ──────────────────────────────────────────
   tracing:
     sampling:
-      probability: 1.0
+      probability: 1.0           # Trace 100% of requests
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
 
-# Logging
+# ─── Logging ──────────────────────────────────────────────────────────────────
 logging:
   level:
     com.learning: DEBUG
     org.springframework.cache: DEBUG
-    org.springframework.kafka: INFO
+    org.springframework.kafka: DEBUG
+    org.hibernate.SQL: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

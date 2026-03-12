@@ -13,7 +13,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * - Request routing and filtering
  * - JWT validation at gateway level (X-Username / X-Role forwarded to services)
  * - Circuit breaker integration
- * - Rate limiting (requires Redis — optional dependency)
+ * - Rate limiting with Redis
  * - CORS configuration
  * - Load balancing through Eureka
  */

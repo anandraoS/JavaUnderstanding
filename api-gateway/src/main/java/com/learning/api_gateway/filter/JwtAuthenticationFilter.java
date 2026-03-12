@@ -13,8 +13,44 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * JWT Authentication Filter for API Gateway
- * Demonstrates: Gateway-level security, JWT validation
+ * ═══════════════════════════════════════════════════════════════════
+ * JWT AUTHENTICATION FILTER (Gateway-level)
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Gateway-level security, JWT validation, Request mutation
+ *
+ * CONCEPT — WHY VALIDATE JWT AT THE GATEWAY?
+ *   Without: Every microservice validates JWT independently (code duplication)
+ *   With:    Gateway validates ONCE, adds user info as headers
+ *            → downstream services trust X-Username / X-Role headers
+ *
+ * PSEUDOCODE — Complete request flow:
+ *   1. Client sends: GET /api/v1/orders
+ *      Header: Authorization: Bearer eyJhbGciOiJIUzUxMi...
+ *
+ *   2. Gateway intercepts → JwtAuthenticationFilter.filter() runs
+ *
+ *   3. Is URL public? ("/auth/", "/actuator/") → skip validation → pass through
+ *
+ *   4. Extract token: "Bearer eyJhbGci..." → "eyJhbGci..."
+ *
+ *   5. Validate token via JwtUtil:
+ *      → Decode JWT → check signature with secret key
+ *      → Check expiration: isExpired? → 401 Unauthorized
+ *      → Extract username: "john_doe"
+ *      → Extract role: "ROLE_USER"
+ *
+ *   6. Mutate request (add headers for downstream service):
+ *      ServerHttpRequest modified = request.mutate()
+ *          .header("X-Username", "john_doe")
+ *          .header("X-Role", "ROLE_USER")
+ *          .build();
+ *
+ *   7. Forward to order-service → order-service reads X-Username header
+ *      → knows WHO is making the request without re-validating JWT
+ *
+ * NOTE: This is a GatewayFilter (reactive/WebFlux), NOT a Servlet filter.
+ *   Uses: ServerWebExchange, ServerHttpRequest, Mono<Void>
+ *   NOT:  HttpServletRequest, HttpServletResponse
  */
 @Slf4j
 @Component
@@ -76,4 +112,3 @@ public class JwtAuthenticationFilter implements GatewayFilter {
         return response.setComplete();
     }
 }
-

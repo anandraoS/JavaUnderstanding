@@ -7,8 +7,38 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Gateway Route Configuration
- * Demonstrates: Dynamic routing, Load balancing
+ * ═══════════════════════════════════════════════════════════════════
+ * API GATEWAY ROUTE CONFIGURATION
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Dynamic routing, Load balancing, Filter chain, Circuit breaker
+ *
+ * CONCEPT — WHAT IS AN API GATEWAY?
+ *   Without gateway: Client must know every service URL
+ *     client → http://192.168.1.5:8081/users  (user-service)
+ *     client → http://192.168.1.6:8082/orders (order-service)
+ *
+ *   With gateway: Client only knows ONE URL
+ *     client → http://gateway:8080/api/v1/users  → routed to user-service
+ *     client → http://gateway:8080/api/v1/orders → routed to order-service
+ *
+ * PSEUDOCODE — How routing works:
+ *   1. Request arrives: GET /api/v1/users/123
+ *   2. Gateway matches path: "/api/v1/users/**" → route "user-service"
+ *   3. Gateway applies filters IN ORDER:
+ *      a) JwtAuthenticationFilter → validates JWT, adds X-Username header
+ *      b) CircuitBreaker → protects against user-service being down
+ *   4. Gateway resolves URI: "lb://user-service"
+ *      → "lb://" means load-balanced via Eureka
+ *      → asks Eureka: "Where is user-service?"
+ *      → gets: 192.168.1.5:8081
+ *   5. Gateway forwards request to http://192.168.1.5:8081/api/v1/users/123
+ *   6. If user-service is DOWN → circuit breaker redirects to:
+ *      forward:/fallback/user-service → FallbackController returns error JSON
+ *
+ * PSEUDOCODE — Auth route vs Protected route:
+ *   /api/v1/users/auth/** → NO JWT filter (public endpoint, login/register)
+ *   /api/v1/users/**      → JWT filter applied (must have valid token)
+ *   /api/v1/orders/**     → JWT filter applied (must have valid token)
  */
 @Configuration
 public class GatewayConfig {
@@ -42,4 +72,3 @@ public class GatewayConfig {
                 .build();
     }
 }
-

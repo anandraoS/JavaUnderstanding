@@ -1,9 +1,10 @@
-# API Gateway Configuration
-# This file bootstraps the gateway, detailed config comes from Config Server
+# ═══════════════════════════════════════════════════════════════════════════════
+# API Gateway Configuration — ALL INFRASTRUCTURE ENABLED
+# ═══════════════════════════════════════════════════════════════════════════════
 
 spring:
   main:
-    web-application-type: reactive   # API Gateway is always WebFlux/reactive
+    web-application-type: reactive   # Gateway is always WebFlux/Netty
   application:
     name: api-gateway
   config:
@@ -14,11 +15,20 @@ spring:
       retry:
         max-attempts: 5
         initial-interval: 1000
+    # Routes are defined in GatewayConfig.java (Java DSL with JWT filter)
+    # gateway:
+    #   routes: configured via RouteLocatorBuilder in GatewayConfig.java
+
+  # ─── REDIS: Rate limiting ───────────────────────────────────────────────────
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 server:
   port: 8080
 
-# Eureka Client
+# ─── Eureka Client ────────────────────────────────────────────────────────────
 eureka:
   client:
     service-url:
@@ -28,6 +38,7 @@ eureka:
   instance:
     prefer-ip-address: true
 
+# ─── Actuator ─────────────────────────────────────────────────────────────────
 management:
   endpoints:
     web:
@@ -36,6 +47,12 @@ management:
   endpoint:
     health:
       show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
 
 logging:
   level:

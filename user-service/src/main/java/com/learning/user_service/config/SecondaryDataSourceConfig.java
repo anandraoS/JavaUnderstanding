@@ -16,8 +16,31 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 /**
- * Secondary DataSource Configuration
+ * ═══════════════════════════════════════════════════════════════════
+ * SECONDARY DATASOURCE CONFIGURATION (MySQL)
+ * ═══════════════════════════════════════════════════════════════════
  * Demonstrates: Multiple database connections (MySQL for audit logs)
+ *
+ * CONCEPT — WHY A SEPARATE DB FOR AUDITING?
+ *   User creates account → save to PostgreSQL (fast, returns immediately)
+ *   Background thread writes audit log → save to MySQL (async, doesn't block user)
+ *   If MySQL is slow → user's request is NOT affected
+ *
+ * PSEUDOCODE — How this differs from PrimaryDataSourceConfig:
+ *   - NO @Primary → this is the "secondary" bean
+ *   - basePackages = "...repository.secondary" → only repos in this package use MySQL
+ *   - Reads YAML: spring.datasource.secondary.url → jdbc:mysql://localhost:3306/user_audit_db
+ *
+ * PSEUDOCODE — How @Transactional("secondaryTransactionManager") works:
+ *   @Transactional                             → uses @Primary (PostgreSQL)
+ *   @Transactional("secondaryTransactionManager") → uses THIS (MySQL)
+ *   This is how UserService.createAuditAsync() writes to MySQL, not PostgreSQL.
+ *
+ * KEY CLASSES:
+ *   DataSourceProperties → reads url, username, password from YAML
+ *   HikariDataSource     → connection pool implementation
+ *   EntityManagerFactory  → JPA's bridge between Java objects and DB tables
+ *   JpaTransactionManager → wraps DB operations in BEGIN/COMMIT/ROLLBACK
  */
 @Configuration
 @EnableJpaRepositories(
@@ -58,4 +81,3 @@ public class SecondaryDataSourceConfig {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }
-

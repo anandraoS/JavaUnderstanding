@@ -4,21 +4,26 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * User Service Application
  *
- * Demonstrates:
- * - RESTful API development with Spring MVC
- * - Spring Data JPA with multiple datasources (H2 locally, PostgreSQL in prod)
+ * Demonstrates ALL enterprise concepts:
+ * - RESTful API with Spring MVC
+ * - Reactive Programming with WebFlux (Mono/Flux)
+ * - Spring Data JPA with MULTIPLE datasources (PostgreSQL + MySQL)
  * - Spring Security with JWT authentication
- * - Caching (in-memory fallback when Redis not available)
- * - Async processing
- * - Event-driven architecture with Kafka
+ * - Distributed Caching with Redis (@Cacheable, @CacheEvict)
+ * - Async processing with @Async
+ * - Event-driven architecture with Apache Kafka
+ * - Scheduled tasks with @Scheduled (Cron expressions)
  * - Service discovery with Eureka
- * - Actuator for monitoring
+ * - Distributed tracing with Zipkin
+ * - Monitoring with Actuator + Prometheus
+ * - OpenAPI / Swagger documentation
  */
 @SpringBootApplication(
     scanBasePackages = {"com.learning.user_service", "com.learning.common_library"}
@@ -27,6 +32,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableCaching
 @EnableAsync
 @EnableScheduling
+@EnableKafka
 public class UserServiceApplication {
 
     public static void main(String[] args) {

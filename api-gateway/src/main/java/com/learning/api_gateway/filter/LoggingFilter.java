@@ -12,8 +12,37 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 /**
- * Global Logging Filter
- * Demonstrates: Request/Response logging, Correlation ID
+ * ═══════════════════════════════════════════════════════════════════
+ * GLOBAL LOGGING FILTER (applies to ALL requests)
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Request/Response logging, Correlation ID, GlobalFilter
+ *
+ * CONCEPT — WHAT IS A GLOBAL FILTER?
+ *   Route filter: applies to specific routes (e.g., JwtAuthenticationFilter)
+ *   Global filter: applies to ALL requests (logging, timing, headers)
+ *
+ * CONCEPT — CORRELATION ID:
+ *   In microservices, one user request touches 5+ services.
+ *   How to trace "which log line belongs to which request"?
+ *   → Assign a UNIQUE ID to the request at the gateway
+ *   → Pass it as X-Correlation-ID header to ALL downstream services
+ *   → Every log line includes this ID
+ *   → grep "abc-123" in logs → see the ENTIRE journey
+ *
+ * PSEUDOCODE — Filter flow:
+ *   1. Request arrives at gateway
+ *   2. Has X-Correlation-ID header? → use it
+ *      No? → generate UUID: "abc-123-def-456"
+ *   3. Log: "Incoming: GET /api/v1/users | Correlation-ID: abc-123"
+ *   4. Add X-Correlation-ID to request headers
+ *   5. Forward request → downstream service processes it
+ *   6. Response comes back
+ *   7. Log: "Completed: GET /api/v1/users | Status: 200 | Duration: 45ms"
+ *
+ * CONCEPT — Ordered.HIGHEST_PRECEDENCE:
+ *   getOrder() returns the LOWEST number = runs FIRST
+ *   This filter runs BEFORE JwtAuthenticationFilter
+ *   So every request is logged, even if JWT validation fails
  */
 @Slf4j
 @Component
@@ -58,4 +87,3 @@ public class LoggingFilter implements GlobalFilter, Ordered {
         return Ordered.HIGHEST_PRECEDENCE;
     }
 }
-

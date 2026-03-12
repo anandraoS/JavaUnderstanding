@@ -13,11 +13,11 @@ spring:
         maximum-pool-size: 10
         minimum-idle: 5
         connection-timeout: 30000
-    # Secondary Database (MySQL) - for demonstration
+    # Secondary Database (MySQL) - for audit logs
     secondary:
-      url: jdbc:mysql://localhost:3306/userdb_secondary
+      url: jdbc:mysql://localhost:3306/user_audit_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       username: root
-      password: root
+      password:
       driver-class-name: com.mysql.cj.jdbc.Driver
       hikari:
         maximum-pool-size: 5

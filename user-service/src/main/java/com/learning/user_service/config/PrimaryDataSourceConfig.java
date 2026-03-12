@@ -18,8 +18,40 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 
 /**
- * Primary DataSource Configuration
- * Demonstrates: Multiple database connections, DataSource configuration
+ * ═══════════════════════════════════════════════════════════════════
+ * PRIMARY DATASOURCE CONFIGURATION (PostgreSQL)
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Multiple database connections, HikariCP connection pool
+ *
+ * CONCEPT — WHY MULTIPLE DATASOURCES?
+ *   Normal app: 1 database for everything
+ *   Enterprise app: Different databases for different concerns
+ *     → PostgreSQL for users (relational, ACID transactions)
+ *     → MySQL for audit logs (separate DB, won't slow down user queries)
+ *
+ * PSEUDOCODE — How Spring resolves which DB to use:
+ *   1. Spring sees @EnableJpaRepositories(basePackages = "...repository.primary")
+ *   2. Any Repository in that package → uses primaryEntityManagerFactory
+ *   3. primaryEntityManagerFactory → uses primaryDataSource
+ *   4. primaryDataSource → reads YAML: spring.datasource.primary.url
+ *   5. That URL points to PostgreSQL: jdbc:postgresql://localhost:5432/userdb
+ *
+ * PSEUDOCODE — How @Primary works:
+ *   When Spring has TWO DataSource beans and someone asks for "a DataSource"
+ *   without specifying which one, @Primary says "use THIS one by default"
+ *
+ * PSEUDOCODE — HikariCP Connection Pool:
+ *   Instead of: open DB connection → query → close (slow, every time)
+ *   HikariCP:   keep 5-10 connections OPEN permanently
+ *               thread needs DB? → borrow connection from pool (instant)
+ *               thread done? → return connection to pool (reused)
+ *   Result: 100x faster than opening fresh connections every time
+ *
+ * KEY ANNOTATIONS:
+ *   @Primary → default bean when multiple beans of same type exist
+ *   @ConfigurationProperties("spring.datasource.primary") → binds YAML to Java
+ *   @Qualifier("primaryDataSource") → pick THIS specific bean by name
+ *   @EnableJpaRepositories → tells Spring which repos use which datasource
  */
 @Configuration
 @EnableTransactionManagement
@@ -65,4 +97,3 @@ public class PrimaryDataSourceConfig {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }
-
