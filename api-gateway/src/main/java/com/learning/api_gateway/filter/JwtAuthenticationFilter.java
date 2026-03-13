@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -67,81 +69,68 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-        String path = request.getPath().toString();
-        String method = request.getMethod() != null ? request.getMethod().name() : null;
-
-        log.debug("JWT Filter — path: {} method: {}", path, method);
 
         // Skip authentication for public endpoints
-        if (isPublicEndpoint(path, method)) {
-            log.debug("JWT Filter — public endpoint, skipping: {}", path);
+        if (isPublicEndpoint(request.getPath().toString(), request.getMethod() != null ? request.getMethod().name() : null)) {
             return chain.filter(exchange);
         }
 
-        // Extract Authorization header
+        // Extract token from Authorization header
         String authHeader = request.getHeaders().getFirst("Authorization");
-        log.debug("JWT Filter — Authorization header present: {}", authHeader != null);
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("JWT Filter — missing or invalid Authorization header for: {} (header value: {})",
-                    path, authHeader != null ? authHeader.substring(0, Math.min(authHeader.length(), 15)) + "..." : "null");
-            return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
+        if (authHeader == null) {
+            log.debug("No Authorization header present for request {} {}", request.getMethod(), request.getPath());
+            return onError(exchange, "Missing Authorization header", HttpStatus.UNAUTHORIZED);
         }
 
-        // Extract the token (remove "Bearer " prefix)
-        String token = authHeader.substring(7).trim();
-
-        if (token.isEmpty()) {
-            log.warn("JWT Filter — empty token for: {}", path);
-            return onError(exchange, "Empty JWT token", HttpStatus.UNAUTHORIZED);
+        if (!authHeader.startsWith("Bearer ")) {
+            log.debug("Authorization header does not start with Bearer for request {} {}", request.getMethod(), request.getPath());
+            return onError(exchange, "Invalid Authorization header format", HttpStatus.UNAUTHORIZED);
         }
 
-        log.debug("JWT Filter — token length: {}, starts with: {}", token.length(),
-                token.substring(0, Math.min(token.length(), 20)) + "...");
+        String token = authHeader.substring(7);
+        // Redact token for logs (only show first/last 4 chars)
+        String redacted = token.length() > 8 ? token.substring(0, 4) + "..." + token.substring(token.length() - 4) : "(redacted)";
+        log.debug("Received Bearer token (redacted): {} for {} {}", redacted, request.getMethod(), request.getPath());
 
         try {
-            // Step 1: Extract username from token
+            // Extract username and validate
             String username = jwtUtil.extractUsername(token);
-            log.debug("JWT Filter — extracted username: {}", username);
-
             if (username == null) {
-                log.warn("JWT Filter — could not extract username from token");
-                return onError(exchange, "Could not extract username from token", HttpStatus.UNAUTHORIZED);
+                log.warn("JWT token has no subject (username) for request {} {}", request.getMethod(), request.getPath());
+                return onError(exchange, "JWT token missing subject", HttpStatus.UNAUTHORIZED);
             }
 
-            // Step 2: Validate token (signature + expiration)
-            boolean isValid = jwtUtil.validateToken(token, username);
-            log.debug("JWT Filter — token valid: {} for user: {}", isValid, username);
-
-            if (!isValid) {
-                log.warn("JWT Filter — token validation failed for user: {}", username);
+            boolean valid = jwtUtil.validateToken(token, username);
+            if (!valid) {
+                log.warn("JWT validation returned false for user '{}' on request {} {}", username, request.getMethod(), request.getPath());
                 return onError(exchange, "Invalid or expired token", HttpStatus.UNAUTHORIZED);
             }
 
-            // Step 3: Extract role
+            // Add user info to request headers for downstream services.
+            // Some ServerHttpRequest implementations expose read-only headers, so
+            // using request.mutate().header(...) can throw UnsupportedOperationException.
+            // Workaround: create a ServerHttpRequestDecorator that returns a new HttpHeaders
+            // containing all original headers plus the X-Username / X-Role entries.
+            HttpHeaders newHeaders = new HttpHeaders();
+            newHeaders.putAll(request.getHeaders());
+            newHeaders.add("X-Username", username);
             String role = jwtUtil.extractRole(token);
-            log.debug("JWT Filter — validated user: {} role: {}", username, role);
+            if (role != null) newHeaders.add("X-Role", role);
 
-            // Step 4: Add user info as headers for downstream services
-            ServerHttpRequest modifiedRequest = request.mutate()
-                    .header("X-Username", username)
-                    .header("X-Role", role != null ? role : "ROLE_USER")
-                    .build();
+            ServerHttpRequest decoratedRequest = new ServerHttpRequestDecorator(request) {
+                @Override
+                public HttpHeaders getHeaders() {
+                    return newHeaders;
+                }
+            };
 
-            return chain.filter(exchange.mutate().request(modifiedRequest).build());
+            return chain.filter(exchange.mutate().request(decoratedRequest).build());
 
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            log.warn("JWT Filter — token expired: {}", e.getMessage());
-            return onError(exchange, "JWT token has expired", HttpStatus.UNAUTHORIZED);
-        } catch (io.jsonwebtoken.security.SecurityException e) {
-            log.warn("JWT Filter — invalid signature: {}", e.getMessage());
-            return onError(exchange, "Invalid JWT signature", HttpStatus.UNAUTHORIZED);
-        } catch (io.jsonwebtoken.MalformedJwtException e) {
-            log.warn("JWT Filter — malformed token: {}", e.getMessage());
-            return onError(exchange, "Malformed JWT token", HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
-            log.error("JWT Filter — unexpected error: {} ({})", e.getMessage(), e.getClass().getName(), e);
-            return onError(exchange, "JWT validation failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+            // Log full stacktrace at debug level for diagnosis, but return minimal message to client
+            log.debug("Exception during JWT validation", e);
+            String cause = e.getClass().getSimpleName() + (e.getMessage() != null ? ": " + e.getMessage() : "");
+            return onError(exchange, "JWT validation failed: " + cause, HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -153,14 +142,30 @@ public class JwtAuthenticationFilter implements GatewayFilter {
      *   But if routing changes, this prevents accidental 401s on public endpoints.
      */
     private boolean isPublicEndpoint(String path, String method) {
-        return path.contains("/auth/") ||
-               path.contains("/actuator") ||
-               path.contains("/swagger-ui") ||
-               path.contains("/api-docs") ||
-               path.startsWith("/fallback") ||
-               (path.equals("/api/v1/users") && "POST".equalsIgnoreCase(method)) ||
-               path.equals("/api/v1/users/register") ||
-               path.equals("/api/v1/users/login");
+        // Normalize null
+        if (path == null) {
+            return false;
+        }
+
+        // Treat any path starting with /api/v1/users as public for POST (registration)
+        if (path.startsWith("/api/v1/users")) {
+            if ("POST".equalsIgnoreCase(method)) {
+                log.debug("Skipping JWT validation for public POST user endpoint: {}", path);
+                return true;
+            }
+        }
+
+        // Other public paths
+        boolean publicPaths = path.contains("/auth/") ||
+                path.contains("/actuator") ||
+                path.contains("/swagger-ui") ||
+                path.contains("/api-docs") ||
+                path.startsWith("/fallback");
+
+        if (publicPaths) {
+            log.debug("Skipping JWT validation for public path: {}", path);
+        }
+        return publicPaths;
     }
 
     /**

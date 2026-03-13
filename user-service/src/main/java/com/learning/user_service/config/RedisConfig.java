@@ -1,5 +1,8 @@
 package com.learning.user_service.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -96,12 +99,20 @@ public class RedisConfig {
             // Test Redis connection
             connectionFactory.getConnection().ping();
 
+            ObjectMapper objectMapper = new ObjectMapper();
+            // Register JavaTimeModule so LocalDateTime and other java.time types serialize/deserialize
+            objectMapper.registerModule(new JavaTimeModule());
+            // Write dates as ISO-8601 strings, not timestamps
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+
             RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                     .entryTtl(Duration.ofMinutes(10))
                     .serializeKeysWith(RedisSerializationContext.SerializationPair
                             .fromSerializer(new StringRedisSerializer()))
                     .serializeValuesWith(RedisSerializationContext.SerializationPair
-                            .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                            .fromSerializer(serializer))
                     .disableCachingNullValues();
 
             log.info("✅ Redis is available — using RedisCacheManager");
