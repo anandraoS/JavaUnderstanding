@@ -2,7 +2,6 @@ package com.learning.api_gateway.filter;
 
 import com.learning.common_library.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -58,8 +57,12 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class JwtAuthenticationFilter implements GatewayFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+        log.info("JwtAuthenticationFilter initialized with JwtUtil: {}", jwtUtil != null ? "OK" : "NULL!");
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
