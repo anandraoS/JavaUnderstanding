@@ -63,6 +63,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/users/auth/**").permitAll()
+                // Allow registration/login endpoints without authentication
+                .requestMatchers("/api/v1/users").permitAll()
+                .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()

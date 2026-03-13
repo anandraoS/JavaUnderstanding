@@ -67,6 +67,7 @@ public class OrderService {
                 .build();
 
         // Add items
+        Order finalOrder = order;
         orderDTO.getItems().forEach(itemDTO -> {
             OrderItem item = OrderItem.builder()
                     .productName(itemDTO.getProductName())
@@ -74,7 +75,7 @@ public class OrderService {
                     .price(itemDTO.getPrice())
                     .subtotal(itemDTO.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())))
                     .build();
-            order.addItem(item);
+            finalOrder.addItem(item);
         });
 
         order = orderRepository.save(order);

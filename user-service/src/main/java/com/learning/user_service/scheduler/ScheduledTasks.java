@@ -14,7 +14,7 @@ import java.util.Objects;
  *
  * CONCEPTS:
  * 1. Cron expression: second minute hour day-of-month month day-of-week
- *    "0 */30 * * * *" = every 30 minutes at second 0
+ *    "0 * //30 * * * *" = every 30 minutes at second 0
  *    "0 0 * * * *"    = top of every hour
  *    "0 0 0 * * *"    = midnight every day
  * 2. fixedRate = run every N milliseconds (300000 = 5 minutes)

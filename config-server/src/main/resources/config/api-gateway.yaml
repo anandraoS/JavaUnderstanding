@@ -10,17 +10,23 @@ spring:
           predicates:
             - Path=/api/v1/users/**
           filters:
-            - StripPrefix=0
+            - StripPrefix=2
             - name: CircuitBreaker
               args:
                 name: userServiceCircuitBreaker
                 fallbackUri: forward:/fallback/user-service
+        - id: user-service-swagger
+          uri: lb://user-service
+          predicates:
+            - Path=/swagger-ui/**, /v3/api-docs/**
+          filters:
+            - StripPrefix=0
         - id: order-service
           uri: lb://order-service
           predicates:
             - Path=/api/v1/orders/**
           filters:
-            - StripPrefix=0
+            - StripPrefix=2
             - name: CircuitBreaker
               args:
                 name: orderServiceCircuitBreaker
@@ -72,4 +78,3 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     com.learning: DEBUG
-

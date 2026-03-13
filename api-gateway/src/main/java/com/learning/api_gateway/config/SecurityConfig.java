@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         // Auth endpoints — always public
                         .pathMatchers("/api/v1/users/auth/**").permitAll()
+                        // Registration endpoint — always public
+                        .pathMatchers("/api/v1/users").permitAll()
                         // Actuator — public for health checks
                         .pathMatchers("/actuator/**").permitAll()
                         // Fallback endpoints — public

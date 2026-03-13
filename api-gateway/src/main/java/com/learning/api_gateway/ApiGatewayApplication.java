@@ -17,7 +17,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * - CORS configuration
  * - Load balancing through Eureka
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.learning.api_gateway", "com.learning.common_library"})
 @EnableDiscoveryClient
 public class ApiGatewayApplication {
 

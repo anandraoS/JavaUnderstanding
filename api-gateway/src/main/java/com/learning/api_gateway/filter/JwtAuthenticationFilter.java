@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter implements GatewayFilter {
         ServerHttpRequest request = exchange.getRequest();
 
         // Skip authentication for public endpoints
-        if (isPublicEndpoint(request.getPath().toString())) {
+        if (isPublicEndpoint(request.getPath().toString(), request.getMethod() != null ? request.getMethod().name() : null)) {
             return chain.filter(exchange);
         }
 
@@ -72,6 +72,10 @@ public class JwtAuthenticationFilter implements GatewayFilter {
         String authHeader = request.getHeaders().getFirst("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            // For registration and auth endpoints, skip error (should not reach here, but double check)
+            if (isPublicEndpoint(request.getPath().toString(), request.getMethod() != null ? request.getMethod().name() : null)) {
+                return chain.filter(exchange);
+            }
             return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
         }
 
@@ -98,11 +102,17 @@ public class JwtAuthenticationFilter implements GatewayFilter {
         }
     }
 
-    private boolean isPublicEndpoint(String path) {
+    private boolean isPublicEndpoint(String path, String method) {
+        // Allow registration and login endpoints without authentication
         return path.contains("/auth/") ||
                path.contains("/actuator/") ||
                path.contains("/swagger-ui") ||
-               path.contains("/api-docs");
+               path.contains("/api-docs") ||
+               (path.equals("/api/v1/users") && (method == null || "POST".equalsIgnoreCase(method))) ||
+               path.equals("/api/v1/users/register") ||
+               path.equals("/api/v1/users/login") ||
+               path.equals("/fallback/") ||
+               path.startsWith("/fallback/");
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {

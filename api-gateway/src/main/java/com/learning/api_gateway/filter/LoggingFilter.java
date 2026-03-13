@@ -53,9 +53,23 @@ public class LoggingFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
 
         // Generate correlation ID if not present
-        String correlationId = request.getHeaders().getFirst("X-Correlation-ID");
-        if (correlationId == null) {
+        String headerCorrelationId = request.getHeaders().getFirst("X-Correlation-ID");
+        String correlationId;
+        ServerWebExchange mutatedExchange = exchange;
+        if (headerCorrelationId == null || headerCorrelationId.isEmpty()) {
             correlationId = UUID.randomUUID().toString();
+            // Only mutate and add header if it was missing
+            try {
+                ServerHttpRequest modifiedRequest = request.mutate()
+                        .header("X-Correlation-ID", correlationId)
+                        .build();
+                mutatedExchange = exchange.mutate().request(modifiedRequest).build();
+            } catch (UnsupportedOperationException e) {
+                // If headers are read-only, skip mutation and just use the original exchange
+                mutatedExchange = exchange;
+            }
+        } else {
+            correlationId = headerCorrelationId;
         }
 
         log.info("Incoming request: {} {} | Correlation-ID: {}",
@@ -63,22 +77,20 @@ public class LoggingFilter implements GlobalFilter, Ordered {
                 request.getPath(),
                 correlationId);
 
-        // Add correlation ID to request for downstream services
-        ServerHttpRequest modifiedRequest = request.mutate()
-                .header("X-Correlation-ID", correlationId)
-                .build();
-
         long startTime = System.currentTimeMillis();
 
-        return chain.filter(exchange.mutate().request(modifiedRequest).build())
+        final String finalCorrelationId = correlationId;
+        final ServerHttpRequest finalRequest = request;
+        final ServerWebExchange finalExchange = mutatedExchange;
+        return chain.filter(mutatedExchange)
                 .doFinally(signalType -> {
                     long duration = System.currentTimeMillis() - startTime;
                     log.info("Request completed: {} {} | Status: {} | Duration: {}ms | Correlation-ID: {}",
-                            request.getMethod(),
-                            request.getPath(),
-                            exchange.getResponse().getStatusCode(),
+                            finalRequest.getMethod(),
+                            finalRequest.getPath(),
+                            finalExchange.getResponse().getStatusCode(),
                             duration,
-                            correlationId);
+                            finalCorrelationId);
                 });
     }
 
