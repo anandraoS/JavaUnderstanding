@@ -1,5 +1,11 @@
 package com.learning.order_service.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -51,12 +57,33 @@ public class RedisConfig {
         try {
             connectionFactory.getConnection().ping();
 
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            // Configure type validator to prevent classloader mismatch errors
+            // when deserializing cached DTOs from common-library
+            PolymorphicTypeValidator typeValidator = BasicPolymorphicTypeValidator.builder()
+                    .allowIfBaseType(Object.class)
+                    .allowIfSubType("com.learning.")
+                    .allowIfSubType("java.")
+                    .allowIfSubType("org.springframework.data.domain.")
+                    .build();
+
+            objectMapper.activateDefaultTyping(
+                    typeValidator,
+                    ObjectMapper.DefaultTyping.NON_FINAL,
+                    JsonTypeInfo.As.PROPERTY
+            );
+
+            GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+
             RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                     .entryTtl(Duration.ofMinutes(10))
                     .serializeKeysWith(RedisSerializationContext.SerializationPair
                             .fromSerializer(new StringRedisSerializer()))
                     .serializeValuesWith(RedisSerializationContext.SerializationPair
-                            .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                            .fromSerializer(serializer))
                     .disableCachingNullValues();
 
             log.info("✅ Redis is available — using RedisCacheManager for order-service");

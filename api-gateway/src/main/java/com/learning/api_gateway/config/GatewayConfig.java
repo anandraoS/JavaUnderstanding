@@ -60,7 +60,7 @@ public class GatewayConfig {
                         .uri("lb://user-service"))
 
                 // 2. User registration: POST /api/v1/users (no JWT needed)
-                //    Must be BEFORE the generic /api/v1/users/** route!
+                //    Must be BEFORE the generic user-service routes!
                 .route("user-service-register", r -> r
                         .path("/api/v1/users")
                         .and()
@@ -69,7 +69,17 @@ public class GatewayConfig {
 
                 // ─── PROTECTED ROUTES (JWT required) ─────────────────────────────
 
-                // 3. All other user endpoints (GET, PUT, DELETE)
+                // 3. User service — base path (GET /api/v1/users — list all users)
+                .route("user-service-base", r -> r
+                        .path("/api/v1/users")
+                        .filters(f -> f
+                                .filter(jwtFilter)
+                                .circuitBreaker(c -> c
+                                        .setName("userServiceCircuitBreaker")
+                                        .setFallbackUri("forward:/fallback/user-service")))
+                        .uri("lb://user-service"))
+
+                // 4. User service — sub-paths (GET /api/v1/users/{id}, PUT, DELETE, etc.)
                 .route("user-service", r -> r
                         .path("/api/v1/users/**")
                         .filters(f -> f
@@ -79,7 +89,17 @@ public class GatewayConfig {
                                         .setFallbackUri("forward:/fallback/user-service")))
                         .uri("lb://user-service"))
 
-                // 4. Order service — all endpoints protected
+                // 5. Order service — base path (POST /api/v1/orders, GET /api/v1/orders)
+                .route("order-service-base", r -> r
+                        .path("/api/v1/orders")
+                        .filters(f -> f
+                                .filter(jwtFilter)
+                                .circuitBreaker(c -> c
+                                        .setName("orderServiceCircuitBreaker")
+                                        .setFallbackUri("forward:/fallback/order-service")))
+                        .uri("lb://order-service"))
+
+                // 6. Order service — sub-paths (GET /api/v1/orders/{id}, PATCH, DELETE, etc.)
                 .route("order-service", r -> r
                         .path("/api/v1/orders/**")
                         .filters(f -> f
