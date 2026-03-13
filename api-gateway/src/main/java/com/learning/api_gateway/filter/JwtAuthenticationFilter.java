@@ -80,9 +80,11 @@ public class JwtAuthenticationFilter implements GatewayFilter {
 
         // Extract Authorization header
         String authHeader = request.getHeaders().getFirst("Authorization");
+        log.debug("JWT Filter — Authorization header present: {}", authHeader != null);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("JWT Filter — missing or invalid Authorization header for: {}", path);
+            log.warn("JWT Filter — missing or invalid Authorization header for: {} (header value: {})",
+                    path, authHeader != null ? authHeader.substring(0, Math.min(authHeader.length(), 15)) + "..." : "null");
             return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
         }
 
@@ -93,6 +95,9 @@ public class JwtAuthenticationFilter implements GatewayFilter {
             log.warn("JWT Filter — empty token for: {}", path);
             return onError(exchange, "Empty JWT token", HttpStatus.UNAUTHORIZED);
         }
+
+        log.debug("JWT Filter — token length: {}, starts with: {}", token.length(),
+                token.substring(0, Math.min(token.length(), 20)) + "...");
 
         try {
             // Step 1: Extract username from token
@@ -105,7 +110,10 @@ public class JwtAuthenticationFilter implements GatewayFilter {
             }
 
             // Step 2: Validate token (signature + expiration)
-            if (!jwtUtil.validateToken(token, username)) {
+            boolean isValid = jwtUtil.validateToken(token, username);
+            log.debug("JWT Filter — token valid: {} for user: {}", isValid, username);
+
+            if (!isValid) {
                 log.warn("JWT Filter — token validation failed for user: {}", username);
                 return onError(exchange, "Invalid or expired token", HttpStatus.UNAUTHORIZED);
             }
@@ -132,7 +140,7 @@ public class JwtAuthenticationFilter implements GatewayFilter {
             log.warn("JWT Filter — malformed token: {}", e.getMessage());
             return onError(exchange, "Malformed JWT token", HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
-            log.error("JWT Filter — unexpected error: {} ({})", e.getMessage(), e.getClass().getSimpleName());
+            log.error("JWT Filter — unexpected error: {} ({})", e.getMessage(), e.getClass().getName(), e);
             return onError(exchange, "JWT validation failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }

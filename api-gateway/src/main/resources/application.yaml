@@ -58,3 +58,4 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     com.learning: DEBUG
+    org.springframework.security: DEBUG

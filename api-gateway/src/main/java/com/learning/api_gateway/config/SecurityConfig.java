@@ -4,9 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
@@ -15,11 +12,13 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
  *
  * KEY CONCEPT:
  * The API Gateway does NOT authenticate users itself — it validates JWT tokens
- * and passes user info (X-Username, X-Role headers) to downstream services.
- * Spring Security here only prevents accessing internal endpoints.
+ * via a custom GatewayFilter (JwtAuthenticationFilter) and passes user info
+ * (X-Username, X-Role headers) to downstream services.
  *
- * We provide a dummy ReactiveUserDetailsService to satisfy Spring Security's
- * autoconfiguration requirement (avoids "No ReactiveUserDetailsService" warning).
+ * Spring Security here is configured to PERMIT ALL exchanges so that it does
+ * NOT interfere with the JWT validation done by the gateway filter.
+ * We disable httpBasic, formLogin, logout, and anonymous to ensure Spring Security
+ * does not try to process the Authorization header — that's the gateway filter's job.
  */
 @Configuration
 @EnableWebFluxSecurity
@@ -34,6 +33,8 @@ public class SecurityConfig {
                         .pathMatchers("/api/v1/users/auth/**").permitAll()
                         // Registration endpoint — POST /api/v1/users — always public
                         .pathMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/users").permitAll()
+                        // Login/Register direct paths — always public
+                        .pathMatchers("/api/v1/users/login", "/api/v1/users/register").permitAll()
                         // Actuator — public for health checks
                         .pathMatchers("/actuator/**").permitAll()
                         // Fallback endpoints — public
@@ -45,20 +46,11 @@ public class SecurityConfig {
                 )
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                // Disable logout filter — not needed for stateless JWT
+                .logout(ServerHttpSecurity.LogoutSpec::disable)
+                // Disable anonymous authentication — let requests pass through as-is
+                // so the Gateway JWT filter handles authentication, not Spring Security
+                .anonymous(ServerHttpSecurity.AnonymousSpec::disable)
                 .build();
-    }
-
-    /**
-     * Dummy ReactiveUserDetailsService — required to suppress Spring Security
-     * autoconfiguration warning. Gateway relies on JWT, not in-memory users.
-     */
-    @Bean
-    public MapReactiveUserDetailsService userDetailsService() {
-        UserDetails dummy = User.withDefaultPasswordEncoder()
-                .username("gateway")
-                .password("gateway")
-                .roles("GATEWAY")
-                .build();
-        return new MapReactiveUserDetailsService(dummy);
     }
 }
