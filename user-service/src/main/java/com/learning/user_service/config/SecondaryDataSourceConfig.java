@@ -14,6 +14,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ═══════════════════════════════════════════════════════════════════
@@ -64,14 +66,33 @@ public class SecondaryDataSourceConfig {
                 .build();
     }
 
+    /**
+     * CONCEPT — MySQL dialect vs PostgreSQL dialect:
+     *   Each database has slightly different SQL syntax.
+     *   Hibernate uses the "dialect" to generate correct SQL for each DB.
+     *
+     *   PostgreSQL: SERIAL for auto-increment, TEXT type, BOOLEAN
+     *   MySQL:      AUTO_INCREMENT, VARCHAR, TINYINT(1) for booleans
+     *
+     *   The dialect tells Hibernate which SQL flavor to generate.
+     *   If dialect is wrong → SQL errors → tables not created!
+     */
     @Bean(name = "secondaryEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean secondaryEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("secondaryDataSource") DataSource dataSource) {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+        properties.put("hibernate.show_sql", "true");
+        properties.put("hibernate.format_sql", "true");
+
         return builder
                 .dataSource(dataSource)
                 .packages("com.learning.user_service.entity")
                 .persistenceUnit("secondary")
+                .properties(properties)
                 .build();
     }
 

@@ -16,6 +16,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ═══════════════════════════════════════════════════════════════════
@@ -78,15 +80,43 @@ public class PrimaryDataSourceConfig {
                 .build();
     }
 
+    /**
+     * CONCEPT — WHY .properties() IS NEEDED HERE:
+     *   When you define a custom EntityManagerFactory, Spring Boot's auto-config
+     *   for spring.jpa.hibernate.ddl-auto is BYPASSED entirely.
+     *   You MUST pass Hibernate properties manually via .properties(Map).
+     *
+     *   Without .properties():
+     *     spring.jpa.hibernate.ddl-auto=update → IGNORED → tables NOT created!
+     *
+     *   With .properties():
+     *     hibernate.hbm2ddl.auto=update → Hibernate creates/updates tables automatically
+     *
+     * PSEUDOCODE — What ddl-auto=update does on startup:
+     *   1. Hibernate reads @Entity classes in "com.learning.user_service.entity"
+     *   2. Compares entity fields with existing DB table columns
+     *   3. Table doesn't exist? → CREATE TABLE users (...)
+     *   4. New field added to entity? → ALTER TABLE users ADD COLUMN ...
+     *   5. Existing column type changed? → usually ignores (safe mode)
+     *   6. Field removed from entity? → column NOT dropped (data preserved)
+     */
     @Primary
     @Bean(name = "primaryEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean primaryEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("primaryDataSource") DataSource dataSource) {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        properties.put("hibernate.show_sql", "true");
+        properties.put("hibernate.format_sql", "true");
+
         return builder
                 .dataSource(dataSource)
                 .packages("com.learning.user_service.entity")
                 .persistenceUnit("primary")
+                .properties(properties)
                 .build();
     }
 
