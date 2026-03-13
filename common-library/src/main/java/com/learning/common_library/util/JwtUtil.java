@@ -113,15 +113,25 @@ public class JwtUtil {
         return createToken(claims, username);
     }
 
+    /**
+     * CONCEPT — JJWT 0.12.x gotcha:
+     *   .subject("john") then .claims().add(map).and() → subject gets WIPED
+     *   because .claims().add() replaces the internal claims map.
+     *
+     *   FIX: Put "sub" directly into the claims map, then use ONE call:
+     *     claims.put("sub", "john")
+     *     .claims().add(claims).and()    → subject is preserved inside the map
+     *
+     *   Or use .claim(key, value) for each custom claim individually.
+     *   We use the second approach below for clarity.
+     */
     private String createToken(Map<String, Object> claims, String subject) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
-                .subject(subject)                        // MUST set subject FIRST
-                .claims()                                // then open claims builder
-                    .add(claims)                         // add custom claims (role, etc.)
-                    .and()                               // close claims builder
+                .subject(subject)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + JWT_TOKEN_VALIDITY))
+                .claim("role", claims.get("role"))       // add each custom claim individually
                 .signWith(key, Jwts.SIG.HS512)
                 .compact();
     }
