@@ -32,6 +32,7 @@ spring:
   datasource:
     primary:
       url: jdbc:postgresql://localhost:5432/userdb
+      schema: public
       username: postgres
       password: postgres
       driver-class-name: org.postgresql.Driver
@@ -39,13 +40,13 @@ spring:
     secondary:
       url: jdbc:mysql://localhost:3306/user_audit_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       username: root
-      password:
+      password: root
       driver-class-name: com.mysql.cj.jdbc.Driver
 
   # ─── JPA / Hibernate ────────────────────────────────────────────────────────
   jpa:
     hibernate:
-      ddl-auto: update         # Create/update tables automatically
+      ddl-auto: create         # Create/update tables automatically
     show-sql: true
     properties:
       hibernate:
