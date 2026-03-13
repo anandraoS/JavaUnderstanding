@@ -2,25 +2,44 @@ package com.learning.order_service.listener;
 
 import com.learning.common_library.event.UserEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Kafka Event Listener
- * Demonstrates: Consuming events from Kafka topics
+ * ═══════════════════════════════════════════════════════════════════
+ * KAFKA EVENT LISTENER — Consumes User Events
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Event-driven architecture, Kafka consumer, Cross-service communication
  *
- * CONCEPTS:
- * 1. @KafkaListener — subscribes to a Kafka topic and receives messages
- * 2. groupId — consumer group (multiple instances share the load)
- * 3. Event-driven: this listener reacts to events published by user-service
+ * CONCEPT — EVENT-DRIVEN ARCHITECTURE:
+ *   Traditional: order-service CALLS user-service directly (HTTP)
+ *   Event-driven: order-service LISTENS for events from user-service
  *
- * Flow: UserService.publishUserEvent() → Kafka "user-events" topic → THIS LISTENER
+ *   Benefits:
+ *   → Services are DECOUPLED (order-service doesn't call user-service)
+ *   → Services can be DOWN independently (events wait in Kafka)
+ *   → Easy to add NEW consumers (e.g., notification-service just subscribes)
  *
- * View topics/messages: Use Kafka UI at http://localhost:9093
- * Or CLI: kafka-console-consumer --bootstrap-server localhost:9092 --topic user-events
+ * PSEUDOCODE — How this works:
+ *   1. User creates account → UserService.publishUserEvent("USER_CREATED")
+ *   2. Event goes to Kafka topic "user-events"
+ *   3. Kafka stores event permanently (configurable retention)
+ *   4. THIS LISTENER picks up the event automatically
+ *   5. We react: e.g., pre-create order preferences, update cached data
+ *
+ * CONCEPT — Consumer Group:
+ *   groupId = "order-service-group"
+ *   If you run 3 instances of order-service:
+ *     → Kafka assigns 1 partition to each instance
+ *     → Each event is processed by EXACTLY ONE instance
+ *     → No duplicate processing!
+ *
+ * @ConditionalOnProperty ensures this bean is only created when Kafka is configured
  */
 @Component
 @Slf4j
+@ConditionalOnProperty(name = "spring.kafka.bootstrap-servers", matchIfMissing = false)
 public class UserEventListener {
 
     @KafkaListener(topics = "user-events", groupId = "order-service-group")

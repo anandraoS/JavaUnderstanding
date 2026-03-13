@@ -32,15 +32,15 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         // Auth endpoints — always public
                         .pathMatchers("/api/v1/users/auth/**").permitAll()
-                        // Registration endpoint — always public
-                        .pathMatchers("/api/v1/users").permitAll()
+                        // Registration endpoint — POST /api/v1/users — always public
+                        .pathMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/users").permitAll()
                         // Actuator — public for health checks
                         .pathMatchers("/actuator/**").permitAll()
                         // Fallback endpoints — public
                         .pathMatchers("/fallback/**").permitAll()
                         // Swagger / OpenAPI — public
                         .pathMatchers("/swagger-ui/**", "/v3/api-docs/**", "/webjars/**").permitAll()
-                        // All other requests pass through (JWT filter handles auth)
+                        // All other requests pass through (JWT filter in route handles auth)
                         .anyExchange().permitAll()
                 )
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)

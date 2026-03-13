@@ -5,6 +5,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 
 /**
  * ═══════════════════════════════════════════════════════════════════
@@ -35,10 +36,14 @@ import org.springframework.context.annotation.Configuration;
  *   6. If user-service is DOWN → circuit breaker redirects to:
  *      forward:/fallback/user-service → FallbackController returns error JSON
  *
- * PSEUDOCODE — Auth route vs Protected route:
- *   /api/v1/users/auth/** → NO JWT filter (public endpoint, login/register)
- *   /api/v1/users/**      → JWT filter applied (must have valid token)
- *   /api/v1/orders/**     → JWT filter applied (must have valid token)
+ * PSEUDOCODE — Route ORDERING is critical:
+ *   Routes are evaluated TOP to BOTTOM. The FIRST match wins.
+ *   So we define SPECIFIC routes (auth, register) BEFORE generic ones.
+ *
+ *   /api/v1/users/auth/**   → NO JWT filter (public - login)
+ *   POST /api/v1/users      → NO JWT filter (public - register)
+ *   /api/v1/users/**        → JWT filter applied (protected)
+ *   /api/v1/orders/**       → JWT filter applied (protected)
  */
 @Configuration
 public class GatewayConfig {
@@ -46,10 +51,25 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder, JwtAuthenticationFilter jwtFilter) {
         return builder.routes()
-                // User Service Routes
+
+                // ─── PUBLIC ROUTES (no JWT required) ─────────────────────────────
+
+                // 1. Auth endpoints: login, register via /auth path
                 .route("user-service-auth", r -> r
                         .path("/api/v1/users/auth/**")
                         .uri("lb://user-service"))
+
+                // 2. User registration: POST /api/v1/users (no JWT needed)
+                //    Must be BEFORE the generic /api/v1/users/** route!
+                .route("user-service-register", r -> r
+                        .path("/api/v1/users")
+                        .and()
+                        .method(HttpMethod.POST)
+                        .uri("lb://user-service"))
+
+                // ─── PROTECTED ROUTES (JWT required) ─────────────────────────────
+
+                // 3. All other user endpoints (GET, PUT, DELETE)
                 .route("user-service", r -> r
                         .path("/api/v1/users/**")
                         .filters(f -> f
@@ -59,7 +79,7 @@ public class GatewayConfig {
                                         .setFallbackUri("forward:/fallback/user-service")))
                         .uri("lb://user-service"))
 
-                // Order Service Routes
+                // 4. Order service — all endpoints protected
                 .route("order-service", r -> r
                         .path("/api/v1/orders/**")
                         .filters(f -> f

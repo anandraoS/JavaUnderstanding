@@ -2,6 +2,7 @@ package com.learning.user_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -57,22 +58,48 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * PSEUDOCODE — Why we permitAll() here:
+     *   In a gateway-based architecture, JWT is validated at the GATEWAY level.
+     *   The gateway adds X-Username and X-Role headers to downstream requests.
+     *   The downstream services (user-service, order-service) TRUST these headers.
+     *   Therefore, user-service does NOT re-validate JWT — the gateway already did it.
+     *
+     *   We still keep Spring Security for:
+     *   1. CSRF protection (disabled for stateless API)
+     *   2. @PreAuthorize on methods (e.g., deleteUser needs ADMIN role)
+     *   3. PasswordEncoder bean for BCrypt hashing
+     *
+     *   If you wanted user-service to ALSO validate JWT independently,
+     *   you would add a custom JwtAuthenticationFilter to the filter chain here.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Auth endpoints — always public (login, register)
                 .requestMatchers("/api/v1/users/auth/**").permitAll()
-                // Allow registration/login endpoints without authentication
-                .requestMatchers("/api/v1/users").permitAll()
-                .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll()
+                // Registration: POST /api/v1/users — explicitly permit POST
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
+                // GET all users (paginated) — public
+                .requestMatchers(HttpMethod.GET, "/api/v1/users").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
+                // Reactive endpoints
+                .requestMatchers("/api/v1/users/reactive/**").permitAll()
+                // Actuator — public for health checks & monitoring
                 .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated()
+                // Swagger / OpenAPI — public
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                // All other requests — permit (gateway already validated JWT)
+                .anyRequest().permitAll()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
+            )
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(formLogin -> formLogin.disable());
 
         return http.build();
     }

@@ -1,7 +1,11 @@
 package com.learning.user_service.config;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -13,26 +17,52 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.time.Duration;
 
 /**
- * Redis Cache Configuration
- * Demonstrates: Distributed caching with Redis
+ * ═══════════════════════════════════════════════════════════════════
+ * REDIS CACHE CONFIGURATION (with In-Memory Fallback)
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Distributed caching with Redis, Graceful fallback
  *
- * CONCEPTS:
- * 1. RedisTemplate — low-level Redis operations (GET, SET, HASH, LIST)
- * 2. RedisCacheManager — integrates with Spring's @Cacheable / @CacheEvict
- * 3. Serialization — how Java objects are stored in Redis (JSON format)
- * 4. TTL (Time-To-Live) — cached entries auto-expire after 10 minutes
+ * CONCEPT — WHY DISTRIBUTED CACHING?
+ *   Local cache (HashMap): fast, but each server instance has its OWN cache
+ *     Server-1 caches user 42 → Server-2 doesn't have it → cache miss
+ *     Server-1 updates user 42 → Server-2 still has OLD data → stale!
+ *
+ *   Redis cache: ALL server instances share ONE cache
+ *     Server-1 caches user 42 → Redis stores it
+ *     Server-2 reads user 42 → Redis returns it (cache hit!)
+ *     Server-1 updates user 42 → Redis updated → Server-2 gets new data
+ *
+ * CONCEPT — SERIALIZATION:
+ *   Java objects can't be stored in Redis directly.
+ *   We serialize them to JSON (GenericJackson2JsonRedisSerializer).
+ *   Redis stores: "users::42" → '{"id":42,"username":"john","email":"j@x.com"}'
+ *
+ * CONCEPT — TTL (Time-To-Live):
+ *   Cached entries auto-expire after 10 minutes.
+ *   Why? Data might change in the database, and we don't want stale cache.
+ *   After TTL expires → next request goes to DB → cache refreshed.
+ *
+ * CONCEPT — FALLBACK:
+ *   If Redis is DOWN, we fallback to ConcurrentMapCacheManager (in-memory).
+ *   The app still works, just without distributed caching.
  *
  * Redis must be running: brew services start redis
  * Verify: redis-cli ping → PONG
  */
 @Configuration
+@Slf4j
 public class RedisConfig {
 
     /**
      * RedisTemplate for direct Redis operations.
      * Use this when you need fine-grained control beyond @Cacheable.
-     * Example: redisTemplate.opsForValue().set("key", value);
-     *          redisTemplate.opsForHash().put("hashKey", "field", value);
+     *
+     * PSEUDOCODE — RedisTemplate operations:
+     *   redisTemplate.opsForValue().set("key", value)     → SET key value
+     *   redisTemplate.opsForValue().get("key")            → GET key
+     *   redisTemplate.opsForHash().put("hash", "field", v)→ HSET hash field v
+     *   redisTemplate.opsForList().leftPush("list", v)    → LPUSH list v
+     *   redisTemplate.delete("key")                       → DEL key
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -48,19 +78,39 @@ public class RedisConfig {
     /**
      * RedisCacheManager — powers @Cacheable, @CachePut, @CacheEvict annotations.
      * All cached entries use JSON serialization and expire after 10 minutes.
+     *
+     * PSEUDOCODE — How @Cacheable works with this manager:
+     *   @Cacheable(value = "users", key = "#id")
+     *   getUserById(42)
+     *     → CacheManager.getCache("users").get("42")
+     *     → Redis: GET "users::42"
+     *     → MISS → execute method → save result to Redis
+     *     → HIT → return cached value (skip method execution!)
+     *
+     * If Redis connection fails, falls back to in-memory cache automatically.
      */
     @Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10))
-                .serializeKeysWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()))
-                .disableCachingNullValues();
+    @Primary
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        try {
+            // Test Redis connection
+            connectionFactory.getConnection().ping();
 
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(cacheConfig)
-                .build();
+            RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+                    .entryTtl(Duration.ofMinutes(10))
+                    .serializeKeysWith(RedisSerializationContext.SerializationPair
+                            .fromSerializer(new StringRedisSerializer()))
+                    .serializeValuesWith(RedisSerializationContext.SerializationPair
+                            .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                    .disableCachingNullValues();
+
+            log.info("✅ Redis is available — using RedisCacheManager");
+            return RedisCacheManager.builder(connectionFactory)
+                    .cacheDefaults(cacheConfig)
+                    .build();
+        } catch (Exception e) {
+            log.warn("⚠️ Redis is unavailable — falling back to in-memory ConcurrentMapCacheManager: {}", e.getMessage());
+            return new ConcurrentMapCacheManager("users");
+        }
     }
 }

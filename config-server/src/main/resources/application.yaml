@@ -1,43 +1,60 @@
-# Config Server Configuration
-# Demonstrates: Centralized configuration management
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIG SERVER — Centralized Configuration Management
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# CONCEPT — WHAT IS A CONFIG SERVER?
+#   In microservices, each service has its own application.yaml.
+#   Problem: change a DB password → must redeploy 5 services!
+#   Solution: store all configs in ONE place (Config Server).
+#   Services fetch their config from here on startup.
+#
+# HOW IT WORKS:
+#   1. Config Server starts on port 8888
+#   2. Uses "native" profile = reads YAML files from classpath:/config/
+#   3. user-service starts → HTTP GET http://localhost:8888/user-service/default
+#   4. Config Server finds config/user-service.yaml → returns its content
+#   5. user-service merges remote config with its local application.yaml
+#      (remote values OVERRIDE local values if same key exists)
+#
+# CONFIG FILE NAMING CONVENTION:
+#   config/{application-name}.yaml        → default profile
+#   config/{application-name}-dev.yaml    → dev profile
+#   config/{application-name}-prod.yaml   → prod profile
+#
+# PSEUDOCODE — Native vs Git backend:
+#   native:  reads from local filesystem / classpath (simple, for dev)
+#   git:     reads from a Git repository (versioned, for production)
+#     spring.cloud.config.server.git.uri: https://github.com/my-org/config-repo
+# ═══════════════════════════════════════════════════════════════════════════════
 
 spring:
   application:
     name: config-server
+  profiles:
+    active: native
   cloud:
     config:
       server:
-        # Using native (filesystem) profile for this demo
-        # In production, use Git repository
         native:
           search-locations: classpath:/config
-        # For Git backend (commented for now):
-        # git:
-        #   uri: https://github.com/your-org/config-repo
-        #   default-label: main
-        #   clone-on-start: true
-  profiles:
-    active: native
 
 server:
   port: 8888
 
-# Eureka Client Configuration
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
-    fetch-registry: true
+    fetch-registry: false
   instance:
     prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,refresh,env
+        include: health,info
   endpoint:
     health:
       show-details: always
@@ -46,4 +63,4 @@ logging:
   level:
     org.springframework.cloud.config: DEBUG
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -30,15 +30,32 @@ public class ScheduledTasks {
     private final CacheManager cacheManager;
 
     /**
-     * Clear all Redis caches every 30 minutes.
+     * Clear all caches every 30 minutes.
      * Prevents stale data from accumulating.
+     *
+     * PSEUDOCODE — Cron: "0 *​/30 * * * *"
+     *   second=0, minute=every 30, hour=any, day=any, month=any, weekday=any
+     *   → runs at :00, :30 of every hour
+     *
+     *   If Redis is DOWN → ConcurrentMapCacheManager is used → still works
+     *   If cache clearing fails → catch exception → continue
      */
     @Scheduled(cron = "0 */30 * * * *")
     public void clearCache() {
-        log.info("Scheduled task: Clearing all Redis caches");
-        cacheManager.getCacheNames()
-                .forEach(cacheName -> Objects.requireNonNull(cacheManager.getCache(cacheName)).clear());
-        log.info("All Redis caches cleared successfully");
+        try {
+            log.info("Scheduled task: Clearing all caches");
+            cacheManager.getCacheNames()
+                    .forEach(cacheName -> {
+                        try {
+                            Objects.requireNonNull(cacheManager.getCache(cacheName)).clear();
+                        } catch (Exception e) {
+                            log.warn("Failed to clear cache '{}': {}", cacheName, e.getMessage());
+                        }
+                    });
+            log.info("All caches cleared successfully");
+        } catch (Exception e) {
+            log.warn("Failed to clear caches: {}", e.getMessage());
+        }
     }
 
     @Scheduled(cron = "0 0 * * * *")

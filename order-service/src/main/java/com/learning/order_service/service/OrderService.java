@@ -12,8 +12,8 @@ import com.learning.order_service.entity.OrderItem;
 import com.learning.order_service.repository.OrderRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,18 +31,44 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
- * Order Service with Circuit Breaker and Retry
- * Demonstrates: Resilience4j, Inter-service communication, Async processing
+ * ═══════════════════════════════════════════════════════════════════
+ * ORDER SERVICE — Business Logic with Resilience Patterns
+ * ═══════════════════════════════════════════════════════════════════
+ * Demonstrates: Circuit Breaker, Retry, Inter-service communication,
+ *               Kafka events, RabbitMQ messages, Async processing
+ *
+ * CONCEPT — ORDER CREATION FLOW:
+ *   1. Validate user exists (via WebClient → user-service, with circuit breaker)
+ *   2. Calculate total from order items
+ *   3. Save order to PostgreSQL
+ *   4. Async: process order in background thread
+ *   5. Async: publish event to Kafka (for analytics/audit)
+ *   6. Async: send notification via RabbitMQ (for email/SMS)
+ *
+ * CONCEPT — WHY SO MANY MESSAGING SYSTEMS?
+ *   This is a LEARNING project showing BOTH Kafka AND RabbitMQ:
+ *   - Kafka: event log (persist events, replay, analytics)
+ *   - RabbitMQ: task queue (send email, process payment, one-time tasks)
+ *   In production, you'd typically choose ONE based on your use case.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final KafkaTemplate<String, OrderEvent> kafkaTemplate;
     private final WebClient.Builder webClientBuilder;
     private final MessageProducerService messageProducerService;
+
+    @Autowired(required = false)
+    private KafkaTemplate<String, OrderEvent> kafkaTemplate;
+
+    public OrderService(OrderRepository orderRepository,
+                        WebClient.Builder webClientBuilder,
+                        MessageProducerService messageProducerService) {
+        this.orderRepository = orderRepository;
+        this.webClientBuilder = webClientBuilder;
+        this.messageProducerService = messageProducerService;
+    }
 
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {
@@ -84,11 +109,16 @@ public class OrderService {
         // Async processing
         processOrderAsync(order);
 
-        // Publish event to Kafka
+        // Publish event to Kafka (async, fire-and-forget)
         publishOrderEvent(order, AppConstants.EVENT_ORDER_CREATED);
 
-        // Send to RabbitMQ for notification
-        messageProducerService.sendOrderNotification(order);
+        // Send to RabbitMQ for notification (resilient)
+        try {
+            messageProducerService.sendOrderNotification(order);
+        } catch (Exception e) {
+            log.warn("Failed to send RabbitMQ notification for order: {} — RabbitMQ may be unavailable: {}",
+                    order.getOrderNumber(), e.getMessage());
+        }
 
         return mapToDTO(order);
     }
@@ -202,19 +232,34 @@ public class OrderService {
         return CompletableFuture.completedFuture(null);
     }
 
+    /**
+     * PSEUDOCODE — Kafka event publishing:
+     *   Build event object → send to "order-events" topic
+     *   Other services (e.g., notification-service, analytics) consume this event
+     *   If Kafka is unavailable → log warning, don't crash
+     */
     private void publishOrderEvent(Order order, String eventType) {
-        OrderEvent event = OrderEvent.builder()
-                .orderId(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .userId(order.getUserId())
-                .totalAmount(order.getTotalAmount())
-                .status(order.getStatus())
-                .eventType(eventType)
-                .timestamp(LocalDateTime.now())
-                .build();
+        if (kafkaTemplate == null) {
+            log.warn("KafkaTemplate not available — skipping event: {} for order: {}", eventType, order.getOrderNumber());
+            return;
+        }
+        try {
+            OrderEvent event = OrderEvent.builder()
+                    .orderId(order.getId())
+                    .orderNumber(order.getOrderNumber())
+                    .userId(order.getUserId())
+                    .totalAmount(order.getTotalAmount())
+                    .status(order.getStatus())
+                    .eventType(eventType)
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        kafkaTemplate.send(AppConstants.TOPIC_ORDER_EVENTS, event);
-        log.info("Published Kafka event: {} for order: {}", eventType, order.getOrderNumber());
+            kafkaTemplate.send(AppConstants.TOPIC_ORDER_EVENTS, event);
+            log.info("Published Kafka event: {} for order: {}", eventType, order.getOrderNumber());
+        } catch (Exception e) {
+            log.warn("Failed to publish Kafka event: {} for order: {} — Kafka may be unavailable: {}",
+                    eventType, order.getOrderNumber(), e.getMessage());
+        }
     }
 
     private String generateOrderNumber() {
