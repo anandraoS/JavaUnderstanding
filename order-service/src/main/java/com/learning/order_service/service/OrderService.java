@@ -3,7 +3,6 @@ package com.learning.order_service.service;
 import com.learning.common_library.constants.AppConstants;
 import com.learning.common_library.dto.OrderDTO;
 import com.learning.common_library.dto.OrderItemDTO;
-import com.learning.common_library.dto.UserDTO;
 import com.learning.common_library.event.OrderEvent;
 import com.learning.common_library.exception.BusinessException;
 import com.learning.common_library.exception.ResourceNotFoundException;
@@ -23,6 +22,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -128,18 +128,25 @@ public class OrderService {
     public void validateUser(Long userId) {
         log.info("Validating user: {}", userId);
 
-        UserDTO user = webClientBuilder.build()
+        // user-service returns ApiResponse<UserDTO> wrapper, not raw UserDTO
+        // We only need to confirm the user exists, so we check for a successful response
+        Boolean userExists = webClientBuilder.build()
                 .get()
                 .uri("http://user-service/api/v1/users/" + userId)
-                .retrieve()
-                .bodyToMono(UserDTO.class)
+                .exchangeToMono(response -> {
+                    if (response.statusCode().is2xxSuccessful()) {
+                        return Mono.just(true);
+                    } else {
+                        return Mono.just(false);
+                    }
+                })
                 .block();
 
-        if (user == null) {
+        if (userExists == null || !userExists) {
             throw new BusinessException("User not found", "USER_NOT_FOUND");
         }
 
-        log.info("User validated: {}", user.getUsername());
+        log.info("User validated successfully for userId: {}", userId);
     }
 
     public void validateUserFallback(Long userId, Exception ex) {
