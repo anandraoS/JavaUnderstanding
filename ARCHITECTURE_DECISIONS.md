@@ -6,6 +6,9 @@ This document explains the key architectural decisions made in this microservice
 
 ---
 
+
+
+
 ## ADR-001: Microservices Architecture
 
 **Decision:** Use microservices instead of monolithic architecture
